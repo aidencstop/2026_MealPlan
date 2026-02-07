@@ -5,13 +5,13 @@ import jwt from 'jsonwebtoken';
 declare global {
   namespace Express {
     interface Request {
-      userId?: number;
+      userId?: string;
     }
   }
 }
 
 export interface JwtPayload {
-  userId: number;
+  userId: string;
   username: string;
 }
 

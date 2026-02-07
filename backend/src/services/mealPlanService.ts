@@ -1,4 +1,4 @@
-import pool from '../db/pool.js';
+import { db } from '../db/firebase.js';
 import { WeeklyMealPlan, WeeklyIntake } from '../types/index.js';
 import { getUserProfile } from './userService.js';
 import { getIntakeRecord } from './intakeService.js';
@@ -9,23 +9,44 @@ import { getCurrentWeekBounds, getLastWeekBounds } from '../utils/weekUtils.js';
  * 특정 주의 식단 조회
  */
 export async function getMealPlan(
-  userId: number,
+  userId: string,
   year: number,
   weekStartDate: string
 ): Promise<WeeklyMealPlan | null> {
-  const result = await pool.query(
-    `SELECT * FROM weekly_meal_plans
-     WHERE user_id = $1 AND year = $2 AND week_start_date = $3`,
-    [userId, year, weekStartDate]
-  );
+  const snapshot = await db
+    .collection('weekly_meal_plans')
+    .where('user_id', '==', userId)
+    .where('year', '==', year)
+    .where('week_start_date', '==', weekStartDate)
+    .limit(1)
+    .get();
 
-  return result.rows[0] || null;
+  if (snapshot.empty) {
+    return null;
+  }
+
+  const doc = snapshot.docs[0];
+  const data = doc.data();
+
+  return {
+    id: doc.id,
+    user_id: data.user_id,
+    year: data.year,
+    week_start_date: data.week_start_date,
+    week_end_date: data.week_end_date,
+    plan_data: data.plan_data,
+    plan_macro: data.plan_macro,
+    rationale: data.rationale,
+    shopping_list: data.shopping_list,
+    substitutions: data.substitutions,
+    created_at: data.created_at
+  };
 }
 
 /**
  * 금주 식단 생성 또는 조회
  */
-export async function getCurrentWeekMealPlan(userId: number): Promise<WeeklyMealPlan> {
+export async function getCurrentWeekMealPlan(userId: string): Promise<WeeklyMealPlan> {
   const currentWeek = getCurrentWeekBounds();
   const { year, weekStartDate, weekEndDate } = currentWeek;
 
@@ -60,27 +81,26 @@ export async function getCurrentWeekMealPlan(userId: number): Promise<WeeklyMeal
     lastWeekRecord?.intake_data
   );
 
-  // DB에 저장
-  const result = await pool.query(
-    `INSERT INTO weekly_meal_plans
-     (user_id, year, week_start_date, week_end_date, plan_data, plan_macro, 
-      rationale, shopping_list, substitutions)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-     RETURNING *`,
-    [
-      userId,
-      year,
-      weekStartDate,
-      weekEndDate,
-      JSON.stringify(mealPlanData.plan),
-      JSON.stringify(mealPlanData.plan_macro),
-      JSON.stringify(mealPlanData.rationale),
-      JSON.stringify(mealPlanData.shopping_list),
-      JSON.stringify(mealPlanData.substitutions)
-    ]
-  );
+  // Firestore에 저장
+  const planDoc = {
+    user_id: userId,
+    year,
+    week_start_date: weekStartDate,
+    week_end_date: weekEndDate,
+    plan_data: mealPlanData.plan,
+    plan_macro: mealPlanData.plan_macro,
+    rationale: mealPlanData.rationale,
+    shopping_list: mealPlanData.shopping_list,
+    substitutions: mealPlanData.substitutions,
+    created_at: new Date().toISOString()
+  };
 
-  return result.rows[0];
+  const docRef = await db.collection('weekly_meal_plans').add(planDoc);
+
+  return {
+    id: docRef.id,
+    ...planDoc
+  };
 }
 
 /**
@@ -88,7 +108,7 @@ export async function getCurrentWeekMealPlan(userId: number): Promise<WeeklyMeal
  * - 저장된 기록이 있으면 반환
  * - 없으면 빈 템플릿 반환
  */
-export async function getLastWeekIntakeForEdit(userId: number): Promise<{
+export async function getLastWeekIntakeForEdit(userId: string): Promise<{
   hasRecord: boolean;
   year: number;
   weekStartDate: string;

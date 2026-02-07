@@ -1,4 +1,4 @@
-import pool from '../db/pool.js';
+import { db } from '../db/firebase.js';
 import bcrypt from 'bcrypt';
 import { User, HealthCondition, UserProfile } from '../types/index.js';
 
@@ -20,66 +20,86 @@ export async function createUser(userData: {
     details?: any;
   }>;
 }): Promise<User> {
-  const client = await pool.connect();
-  
-  try {
-    await client.query('BEGIN');
+  // 비밀번호 해시
+  const passwordHash = await bcrypt.hash(userData.password, SALT_ROUNDS);
 
-    // 비밀번호 해시
-    const passwordHash = await bcrypt.hash(userData.password, SALT_ROUNDS);
+  // 사용자 데이터 준비
+  const userDoc = {
+    username: userData.username,
+    password_hash: passwordHash,
+    name: userData.name,
+    gender: userData.gender,
+    age: userData.age,
+    diet_goal: userData.diet_goal,
+    diet_characteristics: userData.diet_characteristics,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
 
-    // 사용자 생성
-    const userResult = await client.query(
-      `INSERT INTO users 
-       (username, password_hash, name, gender, age, diet_goal, diet_characteristics)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
-       RETURNING id, username, name, gender, age, diet_goal, diet_characteristics, created_at, updated_at`,
-      [
-        userData.username,
-        passwordHash,
-        userData.name,
-        userData.gender,
-        userData.age,
-        userData.diet_goal,
-        JSON.stringify(userData.diet_characteristics)
-      ]
-    );
+  // Firestore에 저장
+  const userRef = await db.collection('users').add(userDoc);
+  const userId = userRef.id;
 
-    const user = userResult.rows[0];
-
-    // 질병/알러지 정보 생성
-    if (userData.health_conditions && userData.health_conditions.length > 0) {
-      for (const condition of userData.health_conditions) {
-        await client.query(
-          `INSERT INTO health_conditions (user_id, condition_type, details)
-           VALUES ($1, $2, $3)`,
-          [user.id, condition.condition_type, JSON.stringify(condition.details || {})]
-        );
-      }
-    }
-
-    await client.query('COMMIT');
-    return user;
-  } catch (error) {
-    await client.query('ROLLBACK');
-    throw error;
-  } finally {
-    client.release();
+  // 건강 정보 저장 (서브컬렉션)
+  if (userData.health_conditions && userData.health_conditions.length > 0) {
+    const batch = db.batch();
+    userData.health_conditions.forEach(condition => {
+      const conditionRef = db
+        .collection('users')
+        .doc(userId)
+        .collection('health_conditions')
+        .doc();
+      batch.set(conditionRef, {
+        condition_type: condition.condition_type,
+        details: condition.details || {},
+        created_at: new Date().toISOString()
+      });
+    });
+    await batch.commit();
   }
+
+  // 반환할 사용자 객체
+  return {
+    id: userId,
+    username: userDoc.username,
+    name: userDoc.name,
+    gender: userDoc.gender as any,
+    age: userDoc.age,
+    diet_goal: userDoc.diet_goal as any,
+    diet_characteristics: userDoc.diet_characteristics,
+    created_at: userDoc.created_at,
+    updated_at: userDoc.updated_at
+  };
 }
 
 /**
  * 사용자명으로 사용자 찾기
  */
 export async function findUserByUsername(username: string): Promise<User | null> {
-  const result = await pool.query(
-    `SELECT id, username, name, gender, age, diet_goal, diet_characteristics, 
-            created_at, updated_at
-     FROM users WHERE username = $1`,
-    [username]
-  );
+  const snapshot = await db
+    .collection('users')
+    .where('username', '==', username)
+    .limit(1)
+    .get();
 
-  return result.rows[0] || null;
+  if (snapshot.empty) {
+    return null;
+  }
+
+  const doc = snapshot.docs[0];
+  const data = doc.data();
+
+  return {
+    id: doc.id,
+    username: data.username,
+    name: data.name,
+    gender: data.gender,
+    age: data.age,
+    diet_goal: data.diet_goal,
+    diet_characteristics: data.diet_characteristics,
+    created_at: data.created_at,
+    updated_at: data.updated_at
+  };
 }
 
 /**
@@ -89,60 +109,88 @@ export async function authenticateUser(
   username: string,
   password: string
 ): Promise<User | null> {
-  const result = await pool.query(
-    `SELECT id, username, password_hash, name, gender, age, diet_goal, 
-            diet_characteristics, created_at, updated_at
-     FROM users WHERE username = $1`,
-    [username]
-  );
+  const snapshot = await db
+    .collection('users')
+    .where('username', '==', username)
+    .limit(1)
+    .get();
 
-  const user = result.rows[0];
-  if (!user) {
+  if (snapshot.empty) {
     return null;
   }
 
-  const isValid = await bcrypt.compare(password, user.password_hash);
+  const doc = snapshot.docs[0];
+  const data = doc.data();
+
+  const isValid = await bcrypt.compare(password, data.password_hash);
   if (!isValid) {
     return null;
   }
 
-  // password_hash 제거
-  const { password_hash, ...userWithoutPassword } = user;
-  return userWithoutPassword;
+  return {
+    id: doc.id,
+    username: data.username,
+    name: data.name,
+    gender: data.gender,
+    age: data.age,
+    diet_goal: data.diet_goal,
+    diet_characteristics: data.diet_characteristics,
+    created_at: data.created_at,
+    updated_at: data.updated_at
+  };
 }
 
 /**
  * ID로 사용자 찾기
  */
-export async function findUserById(userId: number): Promise<User | null> {
-  const result = await pool.query(
-    `SELECT id, username, name, gender, age, diet_goal, diet_characteristics, 
-            created_at, updated_at
-     FROM users WHERE id = $1`,
-    [userId]
-  );
+export async function findUserById(userId: string): Promise<User | null> {
+  const doc = await db.collection('users').doc(userId).get();
 
-  return result.rows[0] || null;
+  if (!doc.exists) {
+    return null;
+  }
+
+  const data = doc.data()!;
+  return {
+    id: doc.id,
+    username: data.username,
+    name: data.name,
+    gender: data.gender,
+    age: data.age,
+    diet_goal: data.diet_goal,
+    diet_characteristics: data.diet_characteristics,
+    created_at: data.created_at,
+    updated_at: data.updated_at
+  };
 }
 
 /**
  * 사용자 프로필 조회 (건강 정보 포함)
  */
-export async function getUserProfile(userId: number): Promise<UserProfile | null> {
+export async function getUserProfile(userId: string): Promise<UserProfile | null> {
   const user = await findUserById(userId);
   if (!user) {
     return null;
   }
 
-  const conditionsResult = await pool.query(
-    `SELECT id, user_id, condition_type, details, created_at
-     FROM health_conditions WHERE user_id = $1`,
-    [userId]
-  );
+  // 건강 정보 조회
+  const conditionsSnapshot = await db
+    .collection('users')
+    .doc(userId)
+    .collection('health_conditions')
+    .get();
+
+  const health_conditions: HealthCondition[] = conditionsSnapshot.docs.map(doc => ({
+    id: doc.id,
+    user_id: userId,
+    condition_type: doc.data().condition_type,
+    details: doc.data().details,
+    created_at: doc.data().created_at
+  }));
 
   return {
     user,
-    health_conditions: conditionsResult.rows
+    health_conditions
   };
 }
 
@@ -150,7 +198,7 @@ export async function getUserProfile(userId: number): Promise<UserProfile | null
  * 사용자 프로필 업데이트
  */
 export async function updateUserProfile(
-  userId: number,
+  userId: string,
   updates: {
     name?: string;
     gender?: string;
@@ -159,76 +207,52 @@ export async function updateUserProfile(
     diet_characteristics?: string[];
   }
 ): Promise<User> {
-  const fields: string[] = [];
-  const values: any[] = [];
-  let paramIndex = 1;
+  const updateData: any = {
+    ...updates,
+    updated_at: new Date().toISOString()
+  };
 
-  if (updates.name !== undefined) {
-    fields.push(`name = $${paramIndex++}`);
-    values.push(updates.name);
-  }
-  if (updates.gender !== undefined) {
-    fields.push(`gender = $${paramIndex++}`);
-    values.push(updates.gender);
-  }
-  if (updates.age !== undefined) {
-    fields.push(`age = $${paramIndex++}`);
-    values.push(updates.age);
-  }
-  if (updates.diet_goal !== undefined) {
-    fields.push(`diet_goal = $${paramIndex++}`);
-    values.push(updates.diet_goal);
-  }
-  if (updates.diet_characteristics !== undefined) {
-    fields.push(`diet_characteristics = $${paramIndex++}`);
-    values.push(JSON.stringify(updates.diet_characteristics));
-  }
+  await db.collection('users').doc(userId).update(updateData);
 
-  values.push(userId);
-
-  const result = await pool.query(
-    `UPDATE users SET ${fields.join(', ')}
-     WHERE id = $${paramIndex}
-     RETURNING id, username, name, gender, age, diet_goal, diet_characteristics, 
-               created_at, updated_at`,
-    values
-  );
-
-  return result.rows[0];
+  const user = await findUserById(userId);
+  return user!;
 }
 
 /**
  * 건강 상태 업데이트
  */
 export async function updateHealthConditions(
-  userId: number,
+  userId: string,
   conditions: Array<{
     condition_type: string;
     details?: any;
   }>
 ): Promise<void> {
-  const client = await pool.connect();
+  // 기존 건강 정보 삭제
+  const existingConditions = await db
+    .collection('users')
+    .doc(userId)
+    .collection('health_conditions')
+    .get();
 
-  try {
-    await client.query('BEGIN');
+  const batch = db.batch();
+  existingConditions.docs.forEach(doc => {
+    batch.delete(doc.ref);
+  });
 
-    // 기존 건강 정보 삭제
-    await client.query('DELETE FROM health_conditions WHERE user_id = $1', [userId]);
+  // 새로운 건강 정보 추가
+  conditions.forEach(condition => {
+    const conditionRef = db
+      .collection('users')
+      .doc(userId)
+      .collection('health_conditions')
+      .doc();
+    batch.set(conditionRef, {
+      condition_type: condition.condition_type,
+      details: condition.details || {},
+      created_at: new Date().toISOString()
+    });
+  });
 
-    // 새로운 건강 정보 추가
-    for (const condition of conditions) {
-      await client.query(
-        `INSERT INTO health_conditions (user_id, condition_type, details)
-         VALUES ($1, $2, $3)`,
-        [userId, condition.condition_type, JSON.stringify(condition.details || {})]
-      );
-    }
-
-    await client.query('COMMIT');
-  } catch (error) {
-    await client.query('ROLLBACK');
-    throw error;
-  } finally {
-    client.release();
-  }
+  await batch.commit();
 }

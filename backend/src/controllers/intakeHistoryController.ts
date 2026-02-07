@@ -33,13 +33,13 @@ export async function getRecordDetail(req: Request, res: Response): Promise<void
       return;
     }
 
-    const recordId = parseInt(req.params.id);
-    if (isNaN(recordId)) {
-      res.status(400).json({ error: '올바른 ID를 입력해주세요.' });
-      return;
-    }
+  const recordId = req.params.id;
+  if (!recordId) {
+    res.status(400).json({ error: '올바른 ID를 입력해주세요.' });
+    return;
+  }
 
-    const record = await getIntakeRecordById(req.userId, recordId);
+  const record = await getIntakeRecordById(req.userId, recordId);
     if (!record) {
       res.status(404).json({ error: '기록을 찾을 수 없습니다.' });
       return;

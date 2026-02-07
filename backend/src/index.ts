@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import pool from './db/pool.js';
+import './db/firebase.js';
 
 // Routes
 import authRoutes from './routes/auth.js';
@@ -52,6 +52,5 @@ app.listen(PORT, () => {
 // Graceful shutdown
 process.on('SIGTERM', () => {
   console.log('SIGTERM 신호를 받았습니다. 서버를 종료합니다.');
-  pool.end();
   process.exit(0);
 });

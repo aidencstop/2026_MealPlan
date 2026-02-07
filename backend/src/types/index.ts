@@ -1,23 +1,23 @@
 // 공통 타입 정의
 
 export interface User {
-  id: number;
+  id: string;
   username: string;
   name: string;
   gender: 'male' | 'female' | 'other';
   age: number;
   diet_goal: 'weight_gain' | 'weight_loss' | 'maintenance';
   diet_characteristics: string[];
-  created_at: Date;
-  updated_at: Date;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface HealthCondition {
-  id: number;
-  user_id: number;
+  id: string;
+  user_id: string;
   condition_type: string;
   details: any;
-  created_at: Date;
+  created_at: string;
 }
 
 export interface Macro {
@@ -62,8 +62,8 @@ export interface IntakeEvaluation {
 }
 
 export interface WeeklyIntakeRecord {
-  id: number;
-  user_id: number;
+  id: string;
+  user_id: string;
   year: number;
   week_start_date: string;
   week_end_date: string;
@@ -73,8 +73,8 @@ export interface WeeklyIntakeRecord {
   weaknesses: string[];
   improvements: string[];
   cautions: string[];
-  created_at: Date;
-  updated_at: Date;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface MealPlanRationale {
@@ -88,8 +88,8 @@ export interface Substitution {
 }
 
 export interface WeeklyMealPlan {
-  id: number;
-  user_id: number;
+  id: string;
+  user_id: string;
   year: number;
   week_start_date: string;
   week_end_date: string;
@@ -98,7 +98,7 @@ export interface WeeklyMealPlan {
   rationale: MealPlanRationale;
   shopping_list: string[];
   substitutions: Substitution[];
-  created_at: Date;
+  created_at: string;
 }
 
 export interface UserProfile {
