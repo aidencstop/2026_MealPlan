@@ -1,0 +1,61 @@
+.meal-editor {
+  margin-bottom: 20px;
+}
+
+.meal-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: var(--text-color);
+}
+
+.meal-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.meal-item {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.meal-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.meal-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.btn-remove {
+  width: 30px;
+  height: 30px;
+  border: none;
+  background-color: var(--danger-color);
+  color: white;
+  border-radius: 4px;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.3s;
+}
+
+.btn-remove:hover {
+  opacity: 0.8;
+}
+
+.meal-add {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
