@@ -21,6 +21,7 @@ export interface HealthCondition {
 }
 
 export interface Macro {
+  calories: number;
   carbs_g: number;
   protein_g: number;
   fat_g: number;

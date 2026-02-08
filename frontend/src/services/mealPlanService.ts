@@ -13,6 +13,18 @@ export async function getCurrentMealPlan(): Promise<{
 }
 
 /**
+ * 금주 식단 다시 생성
+ */
+export async function regenerateMealPlan(): Promise<{
+  message: string;
+  mealPlan: WeeklyMealPlan;
+  lastWeekRecord: WeeklyIntakeRecord | null;
+}> {
+  const response = await api.post('/meal-plan/regenerate');
+  return response.data;
+}
+
+/**
  * 지난주 섭취 기록 조회 (편집용)
  */
 export async function getLastWeekIntake(): Promise<{

@@ -1,11 +1,15 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
 import {
   createUser,
   authenticateUser,
   findUserByUsername,
   findUserById
 } from '../services/userService.js';
+
+// 환경변수 로드
+dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 const JWT_EXPIRES_IN = '7d';
@@ -90,6 +94,12 @@ export async function login(req: Request, res: Response): Promise<void> {
     }
 
     // JWT 토큰 생성
+    console.log('🔑 JWT 토큰 생성:', { 
+      userId: user.id, 
+      username: user.username,
+      jwtSecret: JWT_SECRET 
+    });
+    
     const token = jwt.sign(
       { userId: user.id, username: user.username },
       JWT_SECRET,

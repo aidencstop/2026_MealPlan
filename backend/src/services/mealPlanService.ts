@@ -151,3 +151,27 @@ export async function getLastWeekIntakeForEdit(userId: string): Promise<{
     }
   };
 }
+
+/**
+ * 식단 삭제
+ */
+export async function deleteMealPlan(
+  userId: string,
+  year: number,
+  weekStartDate: string
+): Promise<void> {
+  const snapshot = await db
+    .collection('weekly_meal_plans')
+    .where('user_id', '==', userId)
+    .where('year', '==', year)
+    .where('week_start_date', '==', weekStartDate)
+    .get();
+
+  if (!snapshot.empty) {
+    const batch = db.batch();
+    snapshot.docs.forEach(doc => {
+      batch.delete(doc.ref);
+    });
+    await batch.commit();
+  }
+}

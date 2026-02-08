@@ -15,7 +15,7 @@ function Navbar() {
     <nav className="navbar">
       <div className="navbar-container">
         <Link to="/" className="navbar-brand">
-          🍽️ 주간 식단 추천
+          주간 식단 추천
         </Link>
         
         {user ? (

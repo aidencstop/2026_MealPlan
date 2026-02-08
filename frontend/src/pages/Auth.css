@@ -8,18 +8,19 @@
 
 .auth-card {
   background-color: var(--white);
-  border-radius: 8px;
-  box-shadow: var(--shadow);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
   padding: 40px;
   width: 100%;
-  max-width: 500px;
+  max-width: 480px;
 }
 
 .auth-title {
   text-align: center;
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
-  margin-bottom: 30px;
+  margin-bottom: 32px;
   color: var(--text-color);
 }
 

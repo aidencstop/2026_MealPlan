@@ -1,5 +1,9 @@
 import OpenAI from 'openai';
+import dotenv from 'dotenv';
 import { UserProfile, IntakeEvaluation, WeeklyIntake, Macro } from '../types/index.js';
+
+// 환경변수 로드
+dotenv.config();
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
@@ -52,13 +56,14 @@ ${intakeText}
 
 {
   "macro": {
-    "carbs_g": <숫자>,
-    "protein_g": <숫자>,
-    "fat_g": <숫자>,
+    "calories": <일주일(7일) 전체 칼로리 합계(kcal)>,
+    "carbs_g": <일주일(7일) 전체 탄수화물 합계(g)>,
+    "protein_g": <일주일(7일) 전체 단백질 합계(g)>,
+    "fat_g": <일주일(7일) 전체 지방 합계(g)>,
     "ratio": {
-      "carbs_pct": <숫자>,
-      "protein_pct": <숫자>,
-      "fat_pct": <숫자>
+      "carbs_pct": <탄수화물 비율(%)>,
+      "protein_pct": <단백질 비율(%)>,
+      "fat_pct": <지방 비율(%)>
     }
   },
   "strengths": [
@@ -86,7 +91,9 @@ ${intakeText}
 }
 
 요구사항:
-- 섭취 데이터를 기반으로 정확한 영양소 계산
+- **중요: macro는 일주일(일~토, 7일) 전체 영양소의 총합입니다. 아침/점심/저녁 총 21끼의 영양소를 모두 합산하여 계산하세요.**
+- 일주일치 영양소 총합 예시: 칼로리 14000~17500kcal, 탄수화물 2000~2500g, 단백질 500~700g, 지방 400~600g 수준
+- 칼로리 계산: 탄수화물(4kcal/g) + 단백질(4kcal/g) + 지방(9kcal/g)
 - 사용자의 식단 목적, 특성, 건강 상태 고려
 - 잘된 점: 3~5개의 긍정적인 측면
 - 아쉬운 점: 3~5개의 개선이 필요한 부분
@@ -197,13 +204,14 @@ ${lastWeekInfo}
     }
   },
   "plan_macro": {
-    "carbs_g": <숫자>,
-    "protein_g": <숫자>,
-    "fat_g": <숫자>,
+    "calories": <일주일(7일) 전체 칼로리 합계(kcal)>,
+    "carbs_g": <일주일(7일) 전체 탄수화물 합계(g)>,
+    "protein_g": <일주일(7일) 전체 단백질 합계(g)>,
+    "fat_g": <일주일(7일) 전체 지방 합계(g)>,
     "ratio": {
-      "carbs_pct": <숫자>,
-      "protein_pct": <숫자>,
-      "fat_pct": <숫자>
+      "carbs_pct": <탄수화물 비율(%)>,
+      "protein_pct": <단백질 비율(%)>,
+      "fat_pct": <지방 비율(%)>
     }
   },
   "rationale": {
@@ -240,7 +248,9 @@ ${lastWeekInfo}
 - 식단 특성 준수 (예: 비건, 베지테리언)
 - 식단 목적에 맞게 최적화
 - 지난주 데이터가 있으면 약점 보완 및 강점 강화
-- 주간 영양소 계산 정확히
+- **중요: plan_macro는 일주일(일~토, 7일) 전체 영양소의 총합입니다. 아침/점심/저녁 총 21끼의 영양소를 모두 합산하여 계산하세요.**
+- 일주일치 영양소 총합 예시: 칼로리 14000~17500kcal, 탄수화물 2000~2500g, 단백질 500~700g, 지방 400~600g 수준
+- 칼로리 계산: 탄수화물(4kcal/g) + 단백질(4kcal/g) + 지방(9kcal/g)
 - 모든 텍스트는 한국어로 작성
 - 마크다운 없이 순수 JSON만 출력`;
 }
@@ -256,7 +266,7 @@ export async function evaluateIntake(
 
   try {
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4',
+      model: 'gpt-4o',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.7,
       response_format: { type: 'json_object' }
@@ -301,7 +311,7 @@ export async function generateMealPlan(
 
   try {
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4',
+      model: 'gpt-4o',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.8,
       response_format: { type: 'json_object' }

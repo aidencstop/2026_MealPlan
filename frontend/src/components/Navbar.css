@@ -1,8 +1,9 @@
 .navbar {
   background-color: var(--white);
   box-shadow: var(--shadow);
-  padding: 15px 0;
-  margin-bottom: 20px;
+  padding: 16px 0;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .navbar-container {
@@ -15,9 +16,9 @@
 }
 
 .navbar-brand {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
-  color: var(--primary-color);
+  color: var(--text-color);
   text-decoration: none;
 }
 
@@ -28,14 +29,18 @@
 }
 
 .navbar-link {
-  color: var(--text-color);
+  color: var(--text-secondary);
   text-decoration: none;
   font-weight: 500;
-  transition: color 0.3s ease;
+  transition: color 0.2s ease;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
 }
 
 .navbar-link:hover {
-  color: var(--primary-color);
+  color: var(--text-color);
+  background-color: var(--gray-50);
 }
 
 .navbar-link.active {
@@ -49,6 +54,14 @@
 }
 
 .btn-sm {
-  padding: 8px 15px;
+  padding: 8px 16px;
   font-size: 14px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.navbar-user {
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
 }

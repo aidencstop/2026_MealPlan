@@ -1,10 +1,11 @@
 import { Request, Response } from 'express';
 import {
   getCurrentWeekMealPlan,
-  getLastWeekIntakeForEdit
+  getLastWeekIntakeForEdit,
+  deleteMealPlan
 } from '../services/mealPlanService.js';
 import { saveIntakeRecord, getIntakeRecord } from '../services/intakeService.js';
-import { getLastWeekBounds } from '../utils/weekUtils.js';
+import { getLastWeekBounds, getCurrentWeekBounds } from '../utils/weekUtils.js';
 
 /**
  * 금주 식단 추천 조회
@@ -86,5 +87,42 @@ export async function saveLastWeekIntake(req: Request, res: Response): Promise<v
   } catch (error: any) {
     console.error('섭취 기록 저장 에러:', error);
     res.status(500).json({ error: error.message || '섭취 기록 저장 중 오류가 발생했습니다.' });
+  }
+}
+
+/**
+ * 금주 식단 삭제 (다시 추천받기)
+ */
+export async function regenerateMealPlan(req: Request, res: Response): Promise<void> {
+  try {
+    if (!req.userId) {
+      res.status(401).json({ error: '인증이 필요합니다.' });
+      return;
+    }
+
+    const currentWeek = getCurrentWeekBounds();
+    
+    // 기존 식단 삭제
+    await deleteMealPlan(req.userId, currentWeek.year, currentWeek.weekStartDate);
+    
+    // 새로운 식단 생성
+    const mealPlan = await getCurrentWeekMealPlan(req.userId);
+    
+    // 지난주 섭취 기록도 함께 조회
+    const lastWeek = getLastWeekBounds();
+    const lastWeekRecord = await getIntakeRecord(
+      req.userId,
+      lastWeek.year,
+      lastWeek.weekStartDate
+    );
+
+    res.json({
+      message: '새로운 식단이 생성되었습니다.',
+      mealPlan,
+      lastWeekRecord: lastWeekRecord || null
+    });
+  } catch (error: any) {
+    console.error('식단 재생성 에러:', error);
+    res.status(500).json({ error: error.message || '식단 재생성 중 오류가 발생했습니다.' });
   }
 }

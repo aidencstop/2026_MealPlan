@@ -1,6 +1,10 @@
+import dotenv from 'dotenv';
+
+// 환경변수를 가장 먼저 로드
+dotenv.config();
+
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import './db/firebase.js';
 
 // Routes
@@ -8,8 +12,6 @@ import authRoutes from './routes/auth.js';
 import userRoutes from './routes/user.js';
 import mealPlanRoutes from './routes/mealPlan.js';
 import intakeHistoryRoutes from './routes/intakeHistory.js';
-
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;

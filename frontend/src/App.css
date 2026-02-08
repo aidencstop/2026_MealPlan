@@ -60,12 +60,12 @@
 .page-title {
   font-size: 28px;
   font-weight: 700;
-  margin-bottom: 20px;
+  margin-bottom: 8px;
   color: var(--text-color);
 }
 
 .page-subtitle {
-  font-size: 18px;
-  color: var(--text-light);
-  margin-bottom: 30px;
+  font-size: 15px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
 }

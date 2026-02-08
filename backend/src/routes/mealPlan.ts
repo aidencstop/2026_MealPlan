@@ -2,7 +2,8 @@ import express from 'express';
 import {
   getCurrentMealPlan,
   getLastWeekIntake,
-  saveLastWeekIntake
+  saveLastWeekIntake,
+  regenerateMealPlan
 } from '../controllers/mealPlanController.js';
 import { authenticateToken } from '../middlewares/auth.js';
 
@@ -13,6 +14,9 @@ router.use(authenticateToken);
 
 // 금주 식단 추천 조회
 router.get('/current', getCurrentMealPlan);
+
+// 금주 식단 다시 생성
+router.post('/regenerate', regenerateMealPlan);
 
 // 지난주 섭취 기록 조회 (편집용)
 router.get('/last-week-intake', getLastWeekIntake);

@@ -15,6 +15,7 @@
   background-color: var(--white);
   border-radius: 8px;
   box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
   overflow: hidden;
 }
 
@@ -77,8 +78,8 @@
 }
 
 .day-intake {
-  padding: 12px;
-  background-color: #f9f9f9;
+  padding: 14px;
+  background-color: var(--gray-50);
   border-radius: 6px;
   border-left: 3px solid var(--primary-color);
 }
@@ -122,16 +123,16 @@
 }
 
 .eval-list.positive li {
-  background-color: #e8f5e9;
-  border-left-color: var(--primary-color);
+  background-color: #D1FAE5;
+  border-left-color: var(--success-color);
 }
 
 .eval-list.negative li {
-  background-color: #ffebee;
+  background-color: #FEE2E2;
   border-left-color: var(--danger-color);
 }
 
 .eval-list.warning li {
-  background-color: #fff3e0;
+  background-color: #FEF3C7;
   border-left-color: var(--warning-color);
 }

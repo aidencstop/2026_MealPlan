@@ -116,6 +116,12 @@ function IntakeHistory() {
                     <h4>주간 영양소</h4>
                     <div className="macro-info">
                       <div className="macro-item">
+                        <span className="macro-label">칼로리</span>
+                        <span className="macro-value">
+                          {record.macro.calories?.toLocaleString() || 0} kcal
+                        </span>
+                      </div>
+                      <div className="macro-item">
                         <span className="macro-label">탄수화물</span>
                         <span className="macro-value">
                           {record.macro.carbs_g}g ({record.macro.ratio.carbs_pct}%)
