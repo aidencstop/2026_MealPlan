@@ -30,7 +30,7 @@ function MealEditor({ meals, onChange, label }: MealEditorProps) {
 
   return (
     <div className="meal-editor">
-      <label className="meal-label">{label}</label>
+      {label && <label className="meal-label">{label}</label>}
       
       <div className="meal-items">
         {meals.map((meal, index) => (

@@ -234,13 +234,15 @@ function Profile() {
             </div>
           </div>
 
-          <button
-            type="submit"
-            className="btn btn-primary btn-block"
-            disabled={saving}
-          >
-            {saving ? '저장 중...' : '저장'}
-          </button>
+          <div className="form-submit-center">
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={saving}
+            >
+              {saving ? '저장 중...' : '저장'}
+            </button>
+          </div>
         </form>
       </div>
 

@@ -228,11 +228,14 @@ ${lastWeekInfo}
       "<사용자 니즈 반영 방식>"
     ]
   },
-  "shopping_list": [
-    "<재료1>",
-    "<재료2>",
-    "<재료3>"
-  ],
+  "shopping_list": {
+    "채소": ["<재료1>", "<재료2>"],
+    "과일": ["<재료1>"],
+    "육류·해산물": ["<재료1>", "<재료2>"],
+    "유제품·계란": ["<재료1>"],
+    "곡물·가공식품": ["<재료1>", "<재료2>"],
+    "양념·기타": ["<재료1>"]
+  },
   "substitutions": [
     {
       "avoid": ["<피해야 할 음식>"],
@@ -251,6 +254,7 @@ ${lastWeekInfo}
 - **중요: plan_macro는 일주일(일~토, 7일) 전체 영양소의 총합입니다. 아침/점심/저녁 총 21끼의 영양소를 모두 합산하여 계산하세요.**
 - 일주일치 영양소 총합 예시: 칼로리 14000~17500kcal, 탄수화물 2000~2500g, 단백질 500~700g, 지방 400~600g 수준
 - 칼로리 계산: 탄수화물(4kcal/g) + 단백질(4kcal/g) + 지방(9kcal/g)
+- **shopping_list는 반드시 카테고리별 객체로 출력하세요. 키: 채소, 과일, 육류·해산물, 유제품·계란, 곡물·가공식품, 양념·기타. 해당하는 재료가 없는 카테고리는 빈 배열 []로 두세요.**
 - 모든 텍스트는 한국어로 작성
 - 마크다운 없이 순수 JSON만 출력`;
 }
@@ -298,7 +302,7 @@ export async function generateMealPlan(
   plan: WeeklyIntake;
   plan_macro: Macro;
   rationale: { considered: string[]; notes: string[] };
-  shopping_list: string[];
+  shopping_list: Record<string, string[]>;
   substitutions: Array<{ avoid: string[]; replace_with: string[] }>;
 }> {
   const prompt = buildGenerateMealPlanPrompt(
@@ -323,12 +327,17 @@ export async function generateMealPlan(
     }
 
     const result = JSON.parse(content);
-    
+    const rawList = result.shopping_list;
+    const shopping_list =
+      Array.isArray(rawList)
+        ? { '기타': rawList }
+        : (typeof rawList === 'object' && rawList !== null ? rawList : { '기타': [] });
+
     return {
       plan: result.plan,
       plan_macro: result.plan_macro,
       rationale: result.rationale,
-      shopping_list: result.shopping_list,
+      shopping_list,
       substitutions: result.substitutions
     };
   } catch (error: any) {

@@ -29,7 +29,7 @@
 }
 
 .history-header:hover {
-  background-color: #f9f9f9;
+  background-color: var(--gray-50);
 }
 
 .history-header h3 {
@@ -118,21 +118,21 @@
   padding: 10px 15px;
   margin-bottom: 8px;
   border-radius: 4px;
-  border-left: 3px solid #ddd;
-  background-color: #f9f9f9;
+  border-left: 3px solid var(--border-color);
+  background-color: var(--gray-50);
 }
 
 .eval-list.positive li {
-  background-color: #D1FAE5;
+  background-color: var(--primary-light);
   border-left-color: var(--success-color);
 }
 
 .eval-list.negative li {
-  background-color: #FEE2E2;
+  background-color: #FEF2F2;
   border-left-color: var(--danger-color);
 }
 
 .eval-list.warning li {
-  background-color: #FEF3C7;
+  background-color: #FFF7ED;
   border-left-color: var(--warning-color);
 }

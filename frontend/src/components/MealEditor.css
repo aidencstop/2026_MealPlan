@@ -35,7 +35,7 @@
 .meal-input:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  box-shadow: 0 0 0 3px rgba(255, 179, 128, 0.35);
 }
 
 .btn-remove {
@@ -43,7 +43,7 @@
   height: 32px;
   border: none;
   background-color: var(--danger-color);
-  color: white;
+  color: var(--white);
   border-radius: 6px;
   font-size: 18px;
   cursor: pointer;

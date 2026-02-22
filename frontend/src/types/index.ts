@@ -97,7 +97,7 @@ export interface WeeklyMealPlan {
   plan_data: WeeklyIntake;
   plan_macro: Macro;
   rationale: MealPlanRationale;
-  shopping_list: string[];
+  shopping_list: string[] | Record<string, string[]>;
   substitutions: Substitution[];
   created_at: string;
 }

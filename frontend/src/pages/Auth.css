@@ -67,6 +67,16 @@
   font-weight: 700;
 }
 
+.form-submit-step1 {
+  display: flex;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.form-submit-step1 .btn {
+  width: 25%;
+}
+
 .form-actions {
   display: flex;
   gap: 10px;
@@ -75,4 +85,37 @@
 
 .form-actions button {
   flex: 1;
+}
+
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+}
+
+.password-input-wrapper .form-input {
+  padding-right: 44px;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 4px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.password-toggle-btn:hover {
+  color: var(--primary-color);
+}
+
+.password-toggle-icon {
+  width: 20px;
+  height: 20px;
 }

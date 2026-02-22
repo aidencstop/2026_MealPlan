@@ -1,8 +1,16 @@
 import { useState, useEffect } from 'react';
+import { parseISO, addDays, format } from 'date-fns';
 import { getCurrentMealPlan, getLastWeekIntake, saveLastWeekIntake, regenerateMealPlan } from '../services/mealPlanService';
 import { WeeklyMealPlan, WeeklyIntakeRecord, WeeklyIntake, DailyMeal } from '../types';
 import MealEditor from '../components/MealEditor';
 import './MealPlan.css';
+
+const dayOrder: (keyof WeeklyIntake)[] = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+
+function getTodayDayKey(): keyof WeeklyIntake {
+  const today = new Date();
+  return dayOrder[today.getDay()];
+}
 
 function MealPlan() {
   const [mealPlan, setMealPlan] = useState<WeeklyMealPlan | null>(null);
@@ -19,6 +27,9 @@ function MealPlan() {
   const [regenerating, setRegenerating] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [selectedDay, setSelectedDay] = useState<keyof WeeklyIntake>('sun');
+  const [selectedLastWeekDay, setSelectedLastWeekDay] = useState<keyof WeeklyIntake>('sun');
+  const [selectedModalDay, setSelectedModalDay] = useState<keyof WeeklyIntake>('sun');
 
   useEffect(() => {
     loadData();
@@ -30,6 +41,8 @@ function MealPlan() {
       const data = await getCurrentMealPlan();
       setMealPlan(data.mealPlan);
       setLastWeekRecord(data.lastWeekRecord);
+      setSelectedDay(getTodayDayKey());
+      setSelectedLastWeekDay(getTodayDayKey());
     } catch (err: any) {
       setError(err.response?.data?.error || '데이터를 불러오는데 실패했습니다.');
     } finally {
@@ -41,6 +54,7 @@ function MealPlan() {
     try {
       const data = await getLastWeekIntake();
       setLastWeekData(data);
+      setSelectedModalDay('sun');
       setShowLastWeekEdit(true);
     } catch (err: any) {
       setError(err.response?.data?.error || '지난주 데이터를 불러오는데 실패했습니다.');
@@ -116,6 +130,23 @@ function MealPlan() {
     sat: '토요일'
   };
 
+  const getDateForDay = (weekStartDate: string) => (day: keyof WeeklyIntake) => {
+    const base = parseISO(weekStartDate);
+    const idx = dayOrder.indexOf(day);
+    return format(addDays(base, idx), 'M/d');
+  };
+
+  const getShoppingListByCategory = (): Record<string, string[]> => {
+    if (!mealPlan?.shopping_list) return {};
+    const raw = mealPlan.shopping_list;
+    if (Array.isArray(raw)) return { '기타': raw };
+    return raw;
+  };
+
+  const shoppingListByCategory = mealPlan ? getShoppingListByCategory() : {};
+  const shoppingListTotal = Object.values(shoppingListByCategory).flat().length;
+  const SHOPPING_CATEGORY_ORDER = ['채소', '과일', '육류·해산물', '유제품·계란', '곡물·가공식품', '양념·기타', '기타'];
+
   if (loading) {
     return <div className="loading">로딩 중...</div>;
   }
@@ -129,25 +160,71 @@ function MealPlan() {
 
       {/* 1. 지난주 섭취 기록 섹션 */}
       <div className="card">
-        <h2 className="card-title">지난주 식단</h2>
-        {lastWeekRecord ? (
-          <div>
-            <p className="info-text">
-              {lastWeekRecord.week_start_date} ~ {lastWeekRecord.week_end_date}
-            </p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: lastWeekRecord ? '15px' : 0 }}>
+          <h2 className="card-title" style={{ marginBottom: 0 }}>지난주 식단</h2>
+          {lastWeekRecord && (
             <button className="btn btn-secondary" onClick={handleEditLastWeek}>
               수정하기
             </button>
-          </div>
+          )}
+        </div>
+        {lastWeekRecord ? (
+          <>
+            <p className="info-text" style={{ marginBottom: '20px' }}>
+              {lastWeekRecord.week_start_date} ~ {lastWeekRecord.week_end_date}
+            </p>
+            <div className="day-tabs">
+              {dayOrder.map(day => (
+                <button
+                  key={day}
+                  type="button"
+                  className={`day-tab ${selectedLastWeekDay === day ? 'active' : ''}`}
+                  onClick={() => setSelectedLastWeekDay(day)}
+                >
+                  <span className="day-tab-name">{dayNames[day].replace('요일', '')}</span>
+                  <span className="day-tab-date">{getDateForDay(lastWeekRecord.week_start_date)(day)}</span>
+                </button>
+              ))}
+            </div>
+            <div className="day-card day-card-single">
+              <h3 className="day-title">{dayNames[selectedLastWeekDay]} {getDateForDay(lastWeekRecord.week_start_date)(selectedLastWeekDay)}</h3>
+              <div className="meal-columns">
+                <div className="meal-column">
+                  <strong className="meal-column-title">아침</strong>
+                  <ul>
+                    {lastWeekRecord.intake_data[selectedLastWeekDay].breakfast.map((item, i) => (
+                      <li key={i}>{typeof item === 'string' ? item : item.name}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="meal-column">
+                  <strong className="meal-column-title">점심</strong>
+                  <ul>
+                    {lastWeekRecord.intake_data[selectedLastWeekDay].lunch.map((item, i) => (
+                      <li key={i}>{typeof item === 'string' ? item : item.name}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="meal-column">
+                  <strong className="meal-column-title">저녁</strong>
+                  <ul>
+                    {lastWeekRecord.intake_data[selectedLastWeekDay].dinner.map((item, i) => (
+                      <li key={i}>{typeof item === 'string' ? item : item.name}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </>
         ) : (
-          <div>
+          <>
             <p className="info-text">
               지난주 섭취 기록이 없습니다. 기록을 추가하면 더 정확한 식단 추천을 받을 수 있습니다.
             </p>
             <button className="btn btn-primary" onClick={handleEditLastWeek}>
               지난주 기록 추가
             </button>
-          </div>
+          </>
         )}
       </div>
 
@@ -216,28 +293,49 @@ function MealPlan() {
             <p className="modal-subtitle">
               {lastWeekData.weekStartDate} ~ {lastWeekData.weekEndDate}
             </p>
-            
-            <div className="week-editor">
-              {(Object.keys(lastWeekData.intakeData) as Array<keyof WeeklyIntake>).map(day => (
-                <div key={day} className="day-section">
-                  <h3 className="day-title">{dayNames[day]}</h3>
+
+            <div className="day-tabs">
+              {dayOrder.map(day => (
+                <button
+                  key={day}
+                  type="button"
+                  className={`day-tab ${selectedModalDay === day ? 'active' : ''}`}
+                  onClick={() => setSelectedModalDay(day)}
+                >
+                  <span className="day-tab-name">{dayNames[day].replace('요일', '')}</span>
+                  <span className="day-tab-date">{getDateForDay(lastWeekData.weekStartDate)(day)}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="day-card day-card-single modal-day-editor">
+              <h3 className="day-title">{dayNames[selectedModalDay]} {getDateForDay(lastWeekData.weekStartDate)(selectedModalDay)}</h3>
+              <div className="meal-columns meal-columns-editable">
+                <div className="meal-column">
+                  <strong className="meal-column-title">아침</strong>
                   <MealEditor
-                    label="아침"
-                    meals={lastWeekData.intakeData[day].breakfast}
-                    onChange={(meals) => updateDayMeal(day, 'breakfast', meals)}
-                  />
-                  <MealEditor
-                    label="점심"
-                    meals={lastWeekData.intakeData[day].lunch}
-                    onChange={(meals) => updateDayMeal(day, 'lunch', meals)}
-                  />
-                  <MealEditor
-                    label="저녁"
-                    meals={lastWeekData.intakeData[day].dinner}
-                    onChange={(meals) => updateDayMeal(day, 'dinner', meals)}
+                    label=""
+                    meals={lastWeekData.intakeData[selectedModalDay].breakfast}
+                    onChange={(meals) => updateDayMeal(selectedModalDay, 'breakfast', meals)}
                   />
                 </div>
-              ))}
+                <div className="meal-column">
+                  <strong className="meal-column-title">점심</strong>
+                  <MealEditor
+                    label=""
+                    meals={lastWeekData.intakeData[selectedModalDay].lunch}
+                    onChange={(meals) => updateDayMeal(selectedModalDay, 'lunch', meals)}
+                  />
+                </div>
+                <div className="meal-column">
+                  <strong className="meal-column-title">저녁</strong>
+                  <MealEditor
+                    label=""
+                    meals={lastWeekData.intakeData[selectedModalDay].dinner}
+                    onChange={(meals) => updateDayMeal(selectedModalDay, 'dinner', meals)}
+                  />
+                </div>
+              </div>
             </div>
 
             <div className="modal-actions">
@@ -280,36 +378,48 @@ function MealPlan() {
               </button>
             </div>
 
-            <div className="meal-plan-grid">
-              {(Object.keys(mealPlan.plan_data) as Array<keyof WeeklyIntake>).map(day => (
-                <div key={day} className="day-card">
-                  <h3 className="day-title">{dayNames[day]}</h3>
-                  <div className="meal-section">
-                    <strong>아침:</strong>
-                    <ul>
-                      {mealPlan.plan_data[day].breakfast.map((item, i) => (
-                        <li key={i}>{typeof item === 'string' ? item : item.name}</li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className="meal-section">
-                    <strong>점심:</strong>
-                    <ul>
-                      {mealPlan.plan_data[day].lunch.map((item, i) => (
-                        <li key={i}>{typeof item === 'string' ? item : item.name}</li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className="meal-section">
-                    <strong>저녁:</strong>
-                    <ul>
-                      {mealPlan.plan_data[day].dinner.map((item, i) => (
-                        <li key={i}>{typeof item === 'string' ? item : item.name}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
+            <div className="day-tabs">
+              {dayOrder.map(day => (
+                <button
+                  key={day}
+                  type="button"
+                  className={`day-tab ${selectedDay === day ? 'active' : ''}`}
+                  onClick={() => setSelectedDay(day)}
+                >
+                  <span className="day-tab-name">{dayNames[day].replace('요일', '')}</span>
+                  <span className="day-tab-date">{mealPlan && getDateForDay(mealPlan.week_start_date)(day)}</span>
+                </button>
               ))}
+            </div>
+
+            <div className="day-card day-card-single">
+              <h3 className="day-title">{dayNames[selectedDay]} {mealPlan && getDateForDay(mealPlan.week_start_date)(selectedDay)}</h3>
+              <div className="meal-columns">
+                <div className="meal-column">
+                  <strong className="meal-column-title">아침</strong>
+                  <ul>
+                    {mealPlan.plan_data[selectedDay].breakfast.map((item, i) => (
+                      <li key={i}>{typeof item === 'string' ? item : item.name}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="meal-column">
+                  <strong className="meal-column-title">점심</strong>
+                  <ul>
+                    {mealPlan.plan_data[selectedDay].lunch.map((item, i) => (
+                      <li key={i}>{typeof item === 'string' ? item : item.name}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="meal-column">
+                  <strong className="meal-column-title">저녁</strong>
+                  <ul>
+                    {mealPlan.plan_data[selectedDay].dinner.map((item, i) => (
+                      <li key={i}>{typeof item === 'string' ? item : item.name}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -356,14 +466,31 @@ function MealPlan() {
           </div>
 
           {/* 6. 장보기 리스트 */}
-          {mealPlan.shopping_list && mealPlan.shopping_list.length > 0 && (
+          {shoppingListTotal > 0 && (
             <div className="card">
               <h2 className="card-title">장보기 리스트</h2>
-              <ul className="shopping-list">
-                {mealPlan.shopping_list.map((item, i) => (
-                  <li key={i}>{item}</li>
+              <div className="shopping-list-by-category">
+                {SHOPPING_CATEGORY_ORDER.filter(cat => (shoppingListByCategory[cat]?.length ?? 0) > 0).map(category => (
+                  <div key={category} className="shopping-category">
+                    <h3 className="shopping-category-title">{category}</h3>
+                    <ul className="shopping-list">
+                      {shoppingListByCategory[category].map((item, i) => (
+                        <li key={i}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
                 ))}
-              </ul>
+                {Object.keys(shoppingListByCategory).filter(cat => !SHOPPING_CATEGORY_ORDER.includes(cat)).map(category => (
+                  <div key={category} className="shopping-category">
+                    <h3 className="shopping-category-title">{category}</h3>
+                    <ul className="shopping-list">
+                      {shoppingListByCategory[category].map((item, i) => (
+                        <li key={i}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </>

@@ -3,14 +3,53 @@
   margin-bottom: 15px;
 }
 
-/* 식단 그리드 */
-.meal-plan-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 15px;
+/* 요일 탭 */
+.day-tabs {
+  display: flex;
+  gap: 4px;
   margin-top: 20px;
+  margin-bottom: 20px;
 }
 
+.day-tab {
+  flex: 1;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--gray-50);
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.day-tab:hover {
+  background-color: var(--gray-100);
+  color: var(--text-color);
+}
+
+.day-tab.active {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: var(--white);
+}
+
+.day-tab-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.day-tab-date {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+/* 단일 요일 카드 */
 .day-card {
   background-color: var(--white);
   border: 1px solid var(--border-color);
@@ -23,6 +62,46 @@
   box-shadow: var(--shadow-md);
 }
 
+.day-card-single {
+  margin-top: 0;
+  padding: 24px;
+}
+
+.meal-columns {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 16px;
+}
+
+.meal-column {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.meal-column-title {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.meal-column ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  text-align: center;
+}
+
+.meal-column li {
+  padding: 6px 0;
+  color: var(--text-light);
+  font-size: 14px;
+}
+
 .day-title {
   font-size: 16px;
   font-weight: 700;
@@ -32,6 +111,7 @@
   padding-bottom: 8px;
   text-align: center;
 }
+
 
 .meal-section {
   margin-bottom: 10px;
@@ -111,6 +191,25 @@
 }
 
 /* 장보기 리스트 */
+.shopping-list-by-category {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.shopping-category {
+  break-inside: avoid;
+}
+
+.shopping-category-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-color);
+}
+
 .shopping-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -146,21 +245,21 @@
   padding: 8px 12px;
   margin-bottom: 8px;
   border-radius: 4px;
-  border-left: 3px solid #ddd;
+  border-left: 3px solid var(--border-color);
 }
 
 .evaluation-section li.positive {
-  background-color: #D1FAE5;
+  background-color: var(--primary-light);
   border-left-color: var(--success-color);
 }
 
 .evaluation-section li.negative {
-  background-color: #FEE2E2;
+  background-color: #FEF2F2;
   border-left-color: var(--danger-color);
 }
 
 .evaluation-section li.warning {
-  background-color: #FEF3C7;
+  background-color: #FFF7ED;
   border-left-color: var(--warning-color);
 }
 
