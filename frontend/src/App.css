@@ -1,10 +1,10 @@
-/* App 컴포넌트 스타일 */
+/* App component styles */
 .app {
   min-height: 100vh;
   background-color: var(--bg-color);
 }
 
-/* 네비게이션 바 */
+/* Navbar */
 .navbar {
   background-color: var(--white);
   box-shadow: var(--shadow);
@@ -50,7 +50,7 @@
   font-weight: 600;
 }
 
-/* 페이지 레이아웃 */
+/* Page layout */
 .page-container {
   max-width: 1200px;
   margin: 0 auto;

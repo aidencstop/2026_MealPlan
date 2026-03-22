@@ -1,4 +1,4 @@
-// Frontend 타입 정의 (Backend와 동일)
+// Frontend type definitions (same as backend)
 
 export interface User {
   id: number;
@@ -80,7 +80,7 @@ export interface WeeklyIntakeRecord {
 
 export interface MealPlanRationale {
   considered: string[];
-  notes: string[];
+  notes: string;
 }
 
 export interface Substitution {

@@ -2,7 +2,7 @@ import api from './api';
 import { WeeklyMealPlan, WeeklyIntakeRecord, WeeklyIntake } from '../types';
 
 /**
- * 금주 식단 추천 조회
+ * Get current week meal plan
  */
 export async function getCurrentMealPlan(): Promise<{
   mealPlan: WeeklyMealPlan;
@@ -13,7 +13,7 @@ export async function getCurrentMealPlan(): Promise<{
 }
 
 /**
- * 금주 식단 다시 생성
+ * Regenerate meal plan
  */
 export async function regenerateMealPlan(): Promise<{
   message: string;
@@ -25,7 +25,7 @@ export async function regenerateMealPlan(): Promise<{
 }
 
 /**
- * 지난주 섭취 기록 조회 (편집용)
+ * Get last week intake (for edit)
  */
 export async function getLastWeekIntake(): Promise<{
   hasRecord: boolean;
@@ -39,7 +39,7 @@ export async function getLastWeekIntake(): Promise<{
 }
 
 /**
- * 지난주 섭취 기록 저장
+ * Save last week intake
  */
 export async function saveLastWeekIntake(data: {
   year: number;
@@ -52,7 +52,7 @@ export async function saveLastWeekIntake(data: {
 }
 
 /**
- * 섭취 기록 히스토리 조회
+ * Get intake history
  */
 export async function getIntakeHistory(page: number = 1, limit: number = 3): Promise<{
   records: WeeklyIntakeRecord[];
@@ -66,7 +66,7 @@ export async function getIntakeHistory(page: number = 1, limit: number = 3): Pro
 }
 
 /**
- * 특정 섭취 기록 상세 조회
+ * Get intake record detail
  */
 export async function getIntakeRecordDetail(id: number): Promise<WeeklyIntakeRecord> {
   const response = await api.get(`/intake-history/${id}`);

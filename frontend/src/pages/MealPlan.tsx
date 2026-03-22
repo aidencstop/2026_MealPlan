@@ -44,7 +44,7 @@ function MealPlan() {
       setSelectedDay(getTodayDayKey());
       setSelectedLastWeekDay(getTodayDayKey());
     } catch (err: any) {
-      setError(err.response?.data?.error || '데이터를 불러오는데 실패했습니다.');
+      setError(err.response?.data?.error || 'Failed to load data.');
     } finally {
       setLoading(false);
     }
@@ -57,7 +57,7 @@ function MealPlan() {
       setSelectedModalDay('sun');
       setShowLastWeekEdit(true);
     } catch (err: any) {
-      setError(err.response?.data?.error || '지난주 데이터를 불러오는데 실패했습니다.');
+      setError(err.response?.data?.error || 'Failed to load last week data.');
     }
   };
 
@@ -73,20 +73,20 @@ function MealPlan() {
         week_end_date: lastWeekData.weekEndDate,
         intake_data: lastWeekData.intakeData
       });
-      setSuccess('지난주 섭취 기록이 저장되었습니다!');
+      setSuccess('Last week intake saved!');
       setShowLastWeekEdit(false);
-      // 데이터 다시 로드
+      // Reload data
       await loadData();
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
-      setError(err.response?.data?.error || '저장에 실패했습니다.');
+      setError(err.response?.data?.error || 'Failed to save.');
     } finally {
       setSaving(false);
     }
   };
 
   const handleRegenerateMealPlan = async () => {
-    if (!confirm('현재 식단을 삭제하고 새로운 식단을 생성하시겠습니까?')) {
+    if (!confirm('Delete current meal plan and generate a new one?')) {
       return;
     }
 
@@ -96,10 +96,10 @@ function MealPlan() {
       const data = await regenerateMealPlan();
       setMealPlan(data.mealPlan);
       setLastWeekRecord(data.lastWeekRecord);
-      setSuccess('새로운 식단이 생성되었습니다!');
+      setSuccess('New meal plan generated!');
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
-      setError(err.response?.data?.error || '식단 재생성에 실패했습니다.');
+      setError(err.response?.data?.error || 'Failed to regenerate meal plan.');
     } finally {
       setRegenerating(false);
     }
@@ -121,13 +121,13 @@ function MealPlan() {
   };
 
   const dayNames: Record<string, string> = {
-    sun: '일요일',
-    mon: '월요일',
-    tue: '화요일',
-    wed: '수요일',
-    thu: '목요일',
-    fri: '금요일',
-    sat: '토요일'
+    sun: 'Sunday',
+    mon: 'Monday',
+    tue: 'Tuesday',
+    wed: 'Wednesday',
+    thu: 'Thursday',
+    fri: 'Friday',
+    sat: 'Saturday'
   };
 
   const getDateForDay = (weekStartDate: string) => (day: keyof WeeklyIntake) => {
@@ -139,32 +139,42 @@ function MealPlan() {
   const getShoppingListByCategory = (): Record<string, string[]> => {
     if (!mealPlan?.shopping_list) return {};
     const raw = mealPlan.shopping_list;
-    if (Array.isArray(raw)) return { '기타': raw };
-    return raw;
+    if (Array.isArray(raw)) return { 'Other': raw };
+    const mapped: Record<string, string[]> = {};
+    const keyMap: Record<string, string> = {
+      '채소': 'Vegetables', '과일': 'Fruits', '육류·해산물': 'Meat & Seafood',
+      '유제품·계란': 'Dairy & Eggs', '곡물·가공식품': 'Grains & Processed',
+      '양념·기타': 'Seasonings & Other', '기타': 'Other'
+    };
+    for (const [k, v] of Object.entries(raw)) {
+      const key = keyMap[k] || k;
+      mapped[key] = (mapped[key] || []).concat(v);
+    }
+    return mapped;
   };
 
   const shoppingListByCategory = mealPlan ? getShoppingListByCategory() : {};
   const shoppingListTotal = Object.values(shoppingListByCategory).flat().length;
-  const SHOPPING_CATEGORY_ORDER = ['채소', '과일', '육류·해산물', '유제품·계란', '곡물·가공식품', '양념·기타', '기타'];
+  const SHOPPING_CATEGORY_ORDER = ['Vegetables', 'Fruits', 'Meat & Seafood', 'Dairy & Eggs', 'Grains & Processed', 'Seasonings & Other', 'Other'];
 
   if (loading) {
-    return <div className="loading">로딩 중...</div>;
+    return <div className="loading">Loading...</div>;
   }
 
   return (
     <div className="page-container">
-      <h1 className="page-title">주간 식단 추천</h1>
+      <h1 className="page-title">Weekly Meal Plan</h1>
 
       {error && <div className="error-message">{error}</div>}
       {success && <div className="success-message">{success}</div>}
 
-      {/* 1. 지난주 섭취 기록 섹션 */}
+      {/* 1. Last week intake section */}
       <div className="card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: lastWeekRecord ? '15px' : 0 }}>
-          <h2 className="card-title" style={{ marginBottom: 0 }}>지난주 식단</h2>
+          <h2 className="card-title" style={{ marginBottom: 0 }}>Last Week</h2>
           {lastWeekRecord && (
             <button className="btn btn-secondary" onClick={handleEditLastWeek}>
-              수정하기
+              Edit
             </button>
           )}
         </div>
@@ -181,7 +191,7 @@ function MealPlan() {
                   className={`day-tab ${selectedLastWeekDay === day ? 'active' : ''}`}
                   onClick={() => setSelectedLastWeekDay(day)}
                 >
-                  <span className="day-tab-name">{dayNames[day].replace('요일', '')}</span>
+                  <span className="day-tab-name">{dayNames[day].slice(0, 3)}</span>
                   <span className="day-tab-date">{getDateForDay(lastWeekRecord.week_start_date)(day)}</span>
                 </button>
               ))}
@@ -190,7 +200,7 @@ function MealPlan() {
               <h3 className="day-title">{dayNames[selectedLastWeekDay]} {getDateForDay(lastWeekRecord.week_start_date)(selectedLastWeekDay)}</h3>
               <div className="meal-columns">
                 <div className="meal-column">
-                  <strong className="meal-column-title">아침</strong>
+                  <strong className="meal-column-title">Breakfast</strong>
                   <ul>
                     {lastWeekRecord.intake_data[selectedLastWeekDay].breakfast.map((item, i) => (
                       <li key={i}>{typeof item === 'string' ? item : item.name}</li>
@@ -198,7 +208,7 @@ function MealPlan() {
                   </ul>
                 </div>
                 <div className="meal-column">
-                  <strong className="meal-column-title">점심</strong>
+                  <strong className="meal-column-title">Lunch</strong>
                   <ul>
                     {lastWeekRecord.intake_data[selectedLastWeekDay].lunch.map((item, i) => (
                       <li key={i}>{typeof item === 'string' ? item : item.name}</li>
@@ -206,7 +216,7 @@ function MealPlan() {
                   </ul>
                 </div>
                 <div className="meal-column">
-                  <strong className="meal-column-title">저녁</strong>
+                  <strong className="meal-column-title">Dinner</strong>
                   <ul>
                     {lastWeekRecord.intake_data[selectedLastWeekDay].dinner.map((item, i) => (
                       <li key={i}>{typeof item === 'string' ? item : item.name}</li>
@@ -219,63 +229,63 @@ function MealPlan() {
         ) : (
           <>
             <p className="info-text">
-              지난주 섭취 기록이 없습니다. 기록을 추가하면 더 정확한 식단 추천을 받을 수 있습니다.
+              No last week record. Add your intake for more accurate meal recommendations.
             </p>
             <button className="btn btn-primary" onClick={handleEditLastWeek}>
-              지난주 기록 추가
+              Add Last Week
             </button>
           </>
         )}
       </div>
 
-      {/* 2. 지난주 식단 평가 */}
+      {/* 2. Last week evaluation */}
       {lastWeekRecord && (
         <div className="card">
-          <h2 className="card-title">지난주 식단 평가</h2>
+          <h2 className="card-title">Last Week Evaluation</h2>
           
           <div className="evaluation-section">
-            <h3>영양소</h3>
+            <h3>Macros</h3>
             <div className="macro-info">
               <div className="macro-item">
-                <span className="macro-label">칼로리</span>
+                <span className="macro-label">Calories</span>
                 <span className="macro-value">{lastWeekRecord.macro.calories?.toLocaleString() || 0} kcal</span>
               </div>
               <div className="macro-item">
-                <span className="macro-label">탄수화물</span>
+                <span className="macro-label">Carbs</span>
                 <span className="macro-value">{lastWeekRecord.macro.carbs_g}g ({lastWeekRecord.macro.ratio.carbs_pct}%)</span>
               </div>
               <div className="macro-item">
-                <span className="macro-label">단백질</span>
+                <span className="macro-label">Protein</span>
                 <span className="macro-value">{lastWeekRecord.macro.protein_g}g ({lastWeekRecord.macro.ratio.protein_pct}%)</span>
               </div>
               <div className="macro-item">
-                <span className="macro-label">지방</span>
+                <span className="macro-label">Fat</span>
                 <span className="macro-value">{lastWeekRecord.macro.fat_g}g ({lastWeekRecord.macro.ratio.fat_pct}%)</span>
               </div>
             </div>
 
-            <h3>잘된 점</h3>
+            <h3>Strengths</h3>
             <ul>
               {lastWeekRecord.strengths.map((item, i) => (
                 <li key={i} className="positive">{item}</li>
               ))}
             </ul>
 
-            <h3>아쉬운 점</h3>
+            <h3>Weaknesses</h3>
             <ul>
               {lastWeekRecord.weaknesses.map((item, i) => (
                 <li key={i} className="negative">{item}</li>
               ))}
             </ul>
 
-            <h3>개선 방법</h3>
+            <h3>Improvements</h3>
             <ul>
               {lastWeekRecord.improvements.map((item, i) => (
                 <li key={i}>{item}</li>
               ))}
             </ul>
 
-            <h3>주의사항</h3>
+            <h3>Cautions</h3>
             <ul>
               {lastWeekRecord.cautions.map((item, i) => (
                 <li key={i} className="warning">{item}</li>
@@ -285,11 +295,11 @@ function MealPlan() {
         </div>
       )}
 
-      {/* 지난주 편집 모달 */}
+      {/* Last week edit modal */}
       {showLastWeekEdit && lastWeekData && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h2>지난주 섭취 기록</h2>
+            <h2>Last Week Intake</h2>
             <p className="modal-subtitle">
               {lastWeekData.weekStartDate} ~ {lastWeekData.weekEndDate}
             </p>
@@ -302,7 +312,7 @@ function MealPlan() {
                   className={`day-tab ${selectedModalDay === day ? 'active' : ''}`}
                   onClick={() => setSelectedModalDay(day)}
                 >
-                  <span className="day-tab-name">{dayNames[day].replace('요일', '')}</span>
+                  <span className="day-tab-name">{dayNames[day].slice(0, 3)}</span>
                   <span className="day-tab-date">{getDateForDay(lastWeekData.weekStartDate)(day)}</span>
                 </button>
               ))}
@@ -312,7 +322,7 @@ function MealPlan() {
               <h3 className="day-title">{dayNames[selectedModalDay]} {getDateForDay(lastWeekData.weekStartDate)(selectedModalDay)}</h3>
               <div className="meal-columns meal-columns-editable">
                 <div className="meal-column">
-                  <strong className="meal-column-title">아침</strong>
+                  <strong className="meal-column-title">Breakfast</strong>
                   <MealEditor
                     label=""
                     meals={lastWeekData.intakeData[selectedModalDay].breakfast}
@@ -320,7 +330,7 @@ function MealPlan() {
                   />
                 </div>
                 <div className="meal-column">
-                  <strong className="meal-column-title">점심</strong>
+                  <strong className="meal-column-title">Lunch</strong>
                   <MealEditor
                     label=""
                     meals={lastWeekData.intakeData[selectedModalDay].lunch}
@@ -328,7 +338,7 @@ function MealPlan() {
                   />
                 </div>
                 <div className="meal-column">
-                  <strong className="meal-column-title">저녁</strong>
+                  <strong className="meal-column-title">Dinner</strong>
                   <MealEditor
                     label=""
                     meals={lastWeekData.intakeData[selectedModalDay].dinner}
@@ -344,27 +354,27 @@ function MealPlan() {
                 onClick={() => setShowLastWeekEdit(false)}
                 disabled={saving}
               >
-                취소
+                Cancel
               </button>
               <button
                 className="btn btn-primary"
                 onClick={handleSaveLastWeek}
                 disabled={saving}
               >
-                {saving ? '저장 중...' : '저장'}
+                {saving ? 'Saving...' : 'Save'}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* 3. 금주 추천 식단 */}
+      {/* 3. This week's meal plan */}
       {mealPlan && (
         <>
           <div className="card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
               <div>
-                <h2 className="card-title" style={{ marginBottom: '5px' }}>금주 추천 식단</h2>
+                <h2 className="card-title" style={{ marginBottom: '5px' }}>This Week's Plan</h2>
                 <p className="info-text" style={{ marginBottom: 0 }}>
                   {mealPlan.week_start_date} ~ {mealPlan.week_end_date}
                 </p>
@@ -374,7 +384,7 @@ function MealPlan() {
                 onClick={handleRegenerateMealPlan}
                 disabled={regenerating}
               >
-                {regenerating ? '생성 중...' : '🔄 다시 추천받기'}
+                {regenerating ? 'Generating...' : '🔄 Regenerate'}
               </button>
             </div>
 
@@ -386,7 +396,7 @@ function MealPlan() {
                   className={`day-tab ${selectedDay === day ? 'active' : ''}`}
                   onClick={() => setSelectedDay(day)}
                 >
-                  <span className="day-tab-name">{dayNames[day].replace('요일', '')}</span>
+                  <span className="day-tab-name">{dayNames[day].slice(0, 3)}</span>
                   <span className="day-tab-date">{mealPlan && getDateForDay(mealPlan.week_start_date)(day)}</span>
                 </button>
               ))}
@@ -396,7 +406,7 @@ function MealPlan() {
               <h3 className="day-title">{dayNames[selectedDay]} {mealPlan && getDateForDay(mealPlan.week_start_date)(selectedDay)}</h3>
               <div className="meal-columns">
                 <div className="meal-column">
-                  <strong className="meal-column-title">아침</strong>
+                  <strong className="meal-column-title">Breakfast</strong>
                   <ul>
                     {mealPlan.plan_data[selectedDay].breakfast.map((item, i) => (
                       <li key={i}>{typeof item === 'string' ? item : item.name}</li>
@@ -404,7 +414,7 @@ function MealPlan() {
                   </ul>
                 </div>
                 <div className="meal-column">
-                  <strong className="meal-column-title">점심</strong>
+                  <strong className="meal-column-title">Lunch</strong>
                   <ul>
                     {mealPlan.plan_data[selectedDay].lunch.map((item, i) => (
                       <li key={i}>{typeof item === 'string' ? item : item.name}</li>
@@ -412,7 +422,7 @@ function MealPlan() {
                   </ul>
                 </div>
                 <div className="meal-column">
-                  <strong className="meal-column-title">저녁</strong>
+                  <strong className="meal-column-title">Dinner</strong>
                   <ul>
                     {mealPlan.plan_data[selectedDay].dinner.map((item, i) => (
                       <li key={i}>{typeof item === 'string' ? item : item.name}</li>
@@ -423,52 +433,48 @@ function MealPlan() {
             </div>
           </div>
 
-          {/* 4. 금주 주간 영양소 */}
+          {/* 4. Weekly macros */}
           <div className="card">
-            <h2 className="card-title">금주 주간 영양소</h2>
+            <h2 className="card-title">Weekly Macros</h2>
             <div className="macro-info">
               <div className="macro-item">
-                <span className="macro-label">칼로리</span>
+                <span className="macro-label">Calories</span>
                 <span className="macro-value">{mealPlan.plan_macro.calories?.toLocaleString() || 0} kcal</span>
               </div>
               <div className="macro-item">
-                <span className="macro-label">탄수화물</span>
+                <span className="macro-label">Carbs</span>
                 <span className="macro-value">{mealPlan.plan_macro.carbs_g}g ({mealPlan.plan_macro.ratio.carbs_pct}%)</span>
               </div>
               <div className="macro-item">
-                <span className="macro-label">단백질</span>
+                <span className="macro-label">Protein</span>
                 <span className="macro-value">{mealPlan.plan_macro.protein_g}g ({mealPlan.plan_macro.ratio.protein_pct}%)</span>
               </div>
               <div className="macro-item">
-                <span className="macro-label">지방</span>
+                <span className="macro-label">Fat</span>
                 <span className="macro-value">{mealPlan.plan_macro.fat_g}g ({mealPlan.plan_macro.ratio.fat_pct}%)</span>
               </div>
             </div>
           </div>
 
-          {/* 5. 추천 근거 */}
+          {/* 5. Recommendation rationale */}
           <div className="card">
-            <h2 className="card-title">추천 근거</h2>
+            <h2 className="card-title">Recommendation Rationale</h2>
             <div className="rationale-section">
-              <h3>고려사항</h3>
+              <h3>Considerations</h3>
               <ul>
                 {mealPlan.rationale.considered.map((item, i) => (
                   <li key={i}>{item}</li>
                 ))}
               </ul>
-              <h3>설명</h3>
-              <ul>
-                {mealPlan.rationale.notes.map((note, i) => (
-                  <li key={i}>{note}</li>
-                ))}
-              </ul>
+              <h3>Summary</h3>
+              <p className="rationale-notes-paragraph">{mealPlan.rationale.notes}</p>
             </div>
           </div>
 
-          {/* 6. 장보기 리스트 */}
+          {/* 6. Shopping list */}
           {shoppingListTotal > 0 && (
             <div className="card">
-              <h2 className="card-title">장보기 리스트</h2>
+              <h2 className="card-title">Shopping List</h2>
               <div className="shopping-list-by-category">
                 {SHOPPING_CATEGORY_ORDER.filter(cat => (shoppingListByCategory[cat]?.length ?? 0) > 0).map(category => (
                   <div key={category} className="shopping-category">

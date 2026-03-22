@@ -47,7 +47,7 @@
   width: 100%;
 }
 
-/* Register 페이지 전용 */
+/* Register page specific */
 .register-steps {
   display: flex;
   justify-content: space-around;

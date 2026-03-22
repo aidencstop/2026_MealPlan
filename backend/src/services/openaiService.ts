@@ -1,111 +1,103 @@
 import OpenAI from 'openai';
 import dotenv from 'dotenv';
 import { UserProfile, IntakeEvaluation, WeeklyIntake, Macro } from '../types/index.js';
+import { normalizeMealPlanRationale } from '../utils/rationaleUtils.js';
 
-// 환경변수 로드
 dotenv.config();
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
-/**
- * 지난주 섭취 기록 평가 프롬프트 생성
- */
 function buildEvaluateIntakePrompt(
   userProfile: UserProfile,
   lastWeekIntake: WeeklyIntake
 ): string {
   const { user, health_conditions } = userProfile;
-  
-  // 건강 상태 정리
-  const healthInfo = health_conditions.map(c => c.condition_type).join(', ') || '없음';
+
+  const healthInfo = health_conditions.map(c => c.condition_type).join(', ') || 'none';
   const allergies = health_conditions
     .filter(c => c.condition_type.startsWith('allergy_'))
     .map(c => c.condition_type.replace('allergy_', ''))
-    .join(', ') || '없음';
+    .join(', ') || 'none';
 
-  // 섭취 데이터를 텍스트로 변환
+  const dayNames: Record<string, string> = {
+    sun: 'Sunday', mon: 'Monday', tue: 'Tuesday', wed: 'Wednesday',
+    thu: 'Thursday', fri: 'Friday', sat: 'Saturday'
+  };
   const intakeText = Object.entries(lastWeekIntake)
     .map(([day, meals]) => {
-      const dayNames: any = {
-        sun: '일요일', mon: '월요일', tue: '화요일', wed: '수요일',
-        thu: '목요일', fri: '금요일', sat: '토요일'
-      };
       return `${dayNames[day]}:
-  아침: ${meals.breakfast.map(m => m.name).join(', ') || '없음'}
-  점심: ${meals.lunch.map(m => m.name).join(', ') || '없음'}
-  저녁: ${meals.dinner.map(m => m.name).join(', ') || '없음'}`;
+  Breakfast: ${meals.breakfast.map(m => m.name).join(', ') || 'none'}
+  Lunch: ${meals.lunch.map(m => m.name).join(', ') || 'none'}
+  Dinner: ${meals.dinner.map(m => m.name).join(', ') || 'none'}`;
     })
     .join('\n');
 
-  return `당신은 전문 영양사입니다. 사용자의 주간 식사 섭취 기록을 분석하고 평가를 제공하세요.
+  return `You are a professional nutritionist. Analyze the user's weekly meal intake and provide an evaluation.
 
-사용자 프로필:
-- 성별: ${user.gender === 'male' ? '남성' : user.gender === 'female' ? '여성' : '기타'}
-- 나이: ${user.age}세
-- 식단 목적: ${user.diet_goal === 'weight_gain' ? '체중 증가' : user.diet_goal === 'weight_loss' ? '체중 감량' : '현상 유지'}
-- 식단 특성: ${user.diet_characteristics.join(', ') || '없음'}
-- 건강 상태: ${healthInfo}
-- 알러지: ${allergies}
+User profile:
+- Gender: ${user.gender === 'male' ? 'Male' : user.gender === 'female' ? 'Female' : 'Other'}
+- Age: ${user.age}
+- Diet goal: ${user.diet_goal === 'weight_gain' ? 'Weight gain' : user.diet_goal === 'weight_loss' ? 'Weight loss' : 'Maintenance'}
+- Diet characteristics: ${user.diet_characteristics.join(', ') || 'none'}
+- Health conditions: ${healthInfo}
+- Allergies: ${allergies}
 
-지난 주 섭취 내역 (일요일~토요일):
+Last week's intake (Sunday–Saturday):
 ${intakeText}
 
-다음 JSON 형식으로만 응답하세요. 마크다운 형식이나 추가 텍스트 없이 순수 JSON만 출력하세요:
+Respond ONLY in the following JSON format. Output pure JSON with no markdown or extra text:
 
 {
   "macro": {
-    "calories": <일주일(7일) 전체 칼로리 합계(kcal)>,
-    "carbs_g": <일주일(7일) 전체 탄수화물 합계(g)>,
-    "protein_g": <일주일(7일) 전체 단백질 합계(g)>,
-    "fat_g": <일주일(7일) 전체 지방 합계(g)>,
+    "calories": <total calories for 7 days (kcal)>,
+    "carbs_g": <total carbs for 7 days (g)>,
+    "protein_g": <total protein for 7 days (g)>,
+    "fat_g": <total fat for 7 days (g)>,
     "ratio": {
-      "carbs_pct": <탄수화물 비율(%)>,
-      "protein_pct": <단백질 비율(%)>,
-      "fat_pct": <지방 비율(%)>
+      "carbs_pct": <carbs percentage>,
+      "protein_pct": <protein percentage>,
+      "fat_pct": <fat percentage>
     }
   },
   "strengths": [
-    "<잘된 점 1>",
-    "<잘된 점 2>",
-    "<잘된 점 3>"
+    "<strength 1>",
+    "<strength 2>",
+    "<strength 3>"
   ],
   "weaknesses": [
-    "<아쉬운 점 1>",
-    "<아쉬운 점 2>",
-    "<아쉬운 점 3>"
+    "<weakness 1>",
+    "<weakness 2>",
+    "<weakness 3>"
   ],
   "improvements": [
-    "<개선 방법 1>",
-    "<개선 방법 2>",
-    "<개선 방법 3>",
-    "<개선 방법 4>",
-    "<개선 방법 5>"
+    "<improvement 1>",
+    "<improvement 2>",
+    "<improvement 3>",
+    "<improvement 4>",
+    "<improvement 5>"
   ],
   "cautions": [
-    "<주의사항 1>",
-    "<주의사항 2>",
-    "<주의사항 3>"
+    "<caution 1>",
+    "<caution 2>",
+    "<caution 3>"
   ]
 }
 
-요구사항:
-- **중요: macro는 일주일(일~토, 7일) 전체 영양소의 총합입니다. 아침/점심/저녁 총 21끼의 영양소를 모두 합산하여 계산하세요.**
-- 일주일치 영양소 총합 예시: 칼로리 14000~17500kcal, 탄수화물 2000~2500g, 단백질 500~700g, 지방 400~600g 수준
-- 칼로리 계산: 탄수화물(4kcal/g) + 단백질(4kcal/g) + 지방(9kcal/g)
-- 사용자의 식단 목적, 특성, 건강 상태 고려
-- 잘된 점: 3~5개의 긍정적인 측면
-- 아쉬운 점: 3~5개의 개선이 필요한 부분
-- 개선 방법: 5~8개의 구체적이고 실행 가능한 제안
-- 주의사항: 알러지와 건강 상태 관련 경고 3~5개
-- 모든 텍스트는 한국어로 작성
-- 마크다운 없이 순수 JSON만 출력`;
+Requirements:
+- **Important: macro is the TOTAL for all 7 days. Sum all 21 meals (breakfast/lunch/dinner).**
+- Example totals: calories 14000–17500 kcal, carbs 2000–2500g, protein 500–700g, fat 400–600g
+- Calories: carbs(4 kcal/g) + protein(4 kcal/g) + fat(9 kcal/g)
+- Consider user's diet goal, characteristics, and health
+- Strengths: 3–5 positive aspects
+- Weaknesses: 3–5 areas to improve
+- Improvements: 5–8 specific, actionable suggestions
+- Cautions: 3–5 warnings related to allergies and health
+- Write ALL output text in English
+- Output pure JSON only, no markdown`;
 }
 
-/**
- * 금주 주간 식단 추천 프롬프트 생성
- */
 function buildGenerateMealPlanPrompt(
   userProfile: UserProfile,
   weekStartDate: string,
@@ -114,52 +106,55 @@ function buildGenerateMealPlanPrompt(
   lastWeekIntake?: WeeklyIntake
 ): string {
   const { user, health_conditions } = userProfile;
-  
-  const healthInfo = health_conditions.map(c => c.condition_type).join(', ') || '없음';
+
+  const healthInfo = health_conditions.map(c => c.condition_type).join(', ') || 'none';
   const allergies = health_conditions
     .filter(c => c.condition_type.startsWith('allergy_'))
     .map(c => c.condition_type.replace('allergy_', ''))
-    .join(', ') || '없음';
+    .join(', ') || 'none';
 
   let lastWeekInfo = '';
   if (lastWeekSummary && lastWeekIntake) {
+    const dayNames: Record<string, string> = {
+      sun: 'Sunday', mon: 'Monday', tue: 'Tuesday', wed: 'Wednesday',
+      thu: 'Thursday', fri: 'Friday', sat: 'Saturday'
+    };
     const intakeText = Object.entries(lastWeekIntake)
       .map(([day, meals]) => {
-        const dayNames: any = {
-          sun: '일요일', mon: '월요일', tue: '화요일', wed: '수요일',
-          thu: '목요일', fri: '금요일', sat: '토요일'
-        };
-        return `${dayNames[day]}: 아침(${meals.breakfast.map(m => m.name).join(', ')}), 점심(${meals.lunch.map(m => m.name).join(', ')}), 저녁(${meals.dinner.map(m => m.name).join(', ')})`;
+        return `${dayNames[day]}: Breakfast(${meals.breakfast.map(m => m.name).join(', ')}), Lunch(${meals.lunch.map(m => m.name).join(', ')}), Dinner(${meals.dinner.map(m => m.name).join(', ')})`;
       })
       .join('\n');
 
     lastWeekInfo = `
-지난 주 평가:
-- 영양소: 탄수화물 ${lastWeekSummary.macro.carbs_g}g, 단백질 ${lastWeekSummary.macro.protein_g}g, 지방 ${lastWeekSummary.macro.fat_g}g
-- 잘된 점: ${lastWeekSummary.strengths.join(', ')}
-- 아쉬운 점: ${lastWeekSummary.weaknesses.join(', ')}
-- 개선 필요: ${lastWeekSummary.improvements.join(', ')}
+Last week evaluation:
+- Macros: Carbs ${lastWeekSummary.macro.carbs_g}g, Protein ${lastWeekSummary.macro.protein_g}g, Fat ${lastWeekSummary.macro.fat_g}g
+- Strengths: ${lastWeekSummary.strengths.join(', ')}
+- Weaknesses: ${lastWeekSummary.weaknesses.join(', ')}
+- Improvements: ${lastWeekSummary.improvements.join(', ')}
 
-지난 주 섭취 내역:
+Last week intake:
 ${intakeText}
 `;
   }
 
-  return `당신은 전문 영양사입니다. 사용자를 위한 맞춤형 주간 식단을 생성하세요.
+  return `You are a professional nutritionist. Create a personalized weekly meal plan for the user.
+For the rationale.notes paragraph shown in the app, write in a warm, conversational tone and explain in sufficient detail.
 
-사용자 프로필:
-- 성별: ${user.gender === 'male' ? '남성' : user.gender === 'female' ? '여성' : '기타'}
-- 나이: ${user.age}세
-- 식단 목적: ${user.diet_goal === 'weight_gain' ? '체중 증가' : user.diet_goal === 'weight_loss' ? '체중 감량' : '현상 유지'}
-- 식단 특성: ${user.diet_characteristics.join(', ') || '없음'}
-- 건강 상태: ${healthInfo}
-- 알러지: ${allergies}
+Create a personalized weekly meal plan.
+
+User profile:
+- Gender: ${user.gender === 'male' ? 'Male' : user.gender === 'female' ? 'Female' : 'Other'}
+- Age: ${user.age}
+- Diet goal: ${user.diet_goal === 'weight_gain' ? 'Weight gain' : user.diet_goal === 'weight_loss' ? 'Weight loss' : 'Maintenance'}
+- Diet characteristics: ${user.diet_characteristics.join(', ') || 'none'}
+- Health conditions: ${healthInfo}
+- Allergies: ${allergies}
 ${lastWeekInfo}
-금주 기간:
-- 시작일: ${weekStartDate}
-- 종료일: ${weekEndDate}
+This week:
+- Start: ${weekStartDate}
+- End: ${weekEndDate}
 
-다음 JSON 형식으로만 응답하세요. 마크다운 형식이나 추가 텍스트 없이 순수 JSON만 출력하세요:
+Respond ONLY in the following JSON format. Output pure JSON with no markdown or extra text:
 
 {
   "week": {
@@ -168,100 +163,95 @@ ${lastWeekInfo}
   },
   "plan": {
     "sun": {
-      "breakfast": ["<음식1>", "<음식2>", "<음식3>"],
-      "lunch": ["<음식1>", "<음식2>", "<음식3>"],
-      "dinner": ["<음식1>", "<음식2>", "<음식3>"]
+      "breakfast": ["<food1>", "<food2>", "<food3>"],
+      "lunch": ["<food1>", "<food2>", "<food3>"],
+      "dinner": ["<food1>", "<food2>", "<food3>"]
     },
     "mon": {
-      "breakfast": ["<음식1>", "<음식2>", "<음식3>"],
-      "lunch": ["<음식1>", "<음식2>", "<음식3>"],
-      "dinner": ["<음식1>", "<음식2>", "<음식3>"]
+      "breakfast": ["<food1>", "<food2>", "<food3>"],
+      "lunch": ["<food1>", "<food2>", "<food3>"],
+      "dinner": ["<food1>", "<food2>", "<food3>"]
     },
     "tue": {
-      "breakfast": ["<음식1>", "<음식2>", "<음식3>"],
-      "lunch": ["<음식1>", "<음식2>", "<음식3>"],
-      "dinner": ["<음식1>", "<음식2>", "<음식3>"]
+      "breakfast": ["<food1>", "<food2>", "<food3>"],
+      "lunch": ["<food1>", "<food2>", "<food3>"],
+      "dinner": ["<food1>", "<food2>", "<food3>"]
     },
     "wed": {
-      "breakfast": ["<음식1>", "<음식2>", "<음식3>"],
-      "lunch": ["<음식1>", "<음식2>", "<음식3>"],
-      "dinner": ["<음식1>", "<음식2>", "<음식3>"]
+      "breakfast": ["<food1>", "<food2>", "<food3>"],
+      "lunch": ["<food1>", "<food2>", "<food3>"],
+      "dinner": ["<food1>", "<food2>", "<food3>"]
     },
     "thu": {
-      "breakfast": ["<음식1>", "<음식2>", "<음식3>"],
-      "lunch": ["<음식1>", "<음식2>", "<음식3>"],
-      "dinner": ["<음식1>", "<음식2>", "<음식3>"]
+      "breakfast": ["<food1>", "<food2>", "<food3>"],
+      "lunch": ["<food1>", "<food2>", "<food3>"],
+      "dinner": ["<food1>", "<food2>", "<food3>"]
     },
     "fri": {
-      "breakfast": ["<음식1>", "<음식2>", "<음식3>"],
-      "lunch": ["<음식1>", "<음식2>", "<음식3>"],
-      "dinner": ["<음식1>", "<음식2>", "<음식3>"]
+      "breakfast": ["<food1>", "<food2>", "<food3>"],
+      "lunch": ["<food1>", "<food2>", "<food3>"],
+      "dinner": ["<food1>", "<food2>", "<food3>"]
     },
     "sat": {
-      "breakfast": ["<음식1>", "<음식2>", "<음식3>"],
-      "lunch": ["<음식1>", "<음식2>", "<음식3>"],
-      "dinner": ["<음식1>", "<음식2>", "<음식3>"]
+      "breakfast": ["<food1>", "<food2>", "<food3>"],
+      "lunch": ["<food1>", "<food2>", "<food3>"],
+      "dinner": ["<food1>", "<food2>", "<food3>"]
     }
   },
   "plan_macro": {
-    "calories": <일주일(7일) 전체 칼로리 합계(kcal)>,
-    "carbs_g": <일주일(7일) 전체 탄수화물 합계(g)>,
-    "protein_g": <일주일(7일) 전체 단백질 합계(g)>,
-    "fat_g": <일주일(7일) 전체 지방 합계(g)>,
+    "calories": <total for 7 days (kcal)>,
+    "carbs_g": <total (g)>,
+    "protein_g": <total (g)>,
+    "fat_g": <total (g)>,
     "ratio": {
-      "carbs_pct": <탄수화물 비율(%)>,
-      "protein_pct": <단백질 비율(%)>,
-      "fat_pct": <지방 비율(%)>
+      "carbs_pct": <number>,
+      "protein_pct": <number>,
+      "fat_pct": <number>
     }
   },
   "rationale": {
     "considered": [
-      "<고려사항 1: 성별/나이>",
-      "<고려사항 2: 식단 목적>",
-      "<고려사항 3: 식단 특성>",
-      "<고려사항 4: 건강 상태>",
-      "<고려사항 5: 지난주 반영 여부>"
+      "<how age/gender was reflected, one line>",
+      "<how diet goal was reflected, one line>",
+      "<how diet characteristics were reflected, one line>",
+      "<how health/allergies were reflected, one line>",
+      "<how last week was reflected, or 'no last week record' if none>"
     ],
-    "notes": [
-      "<전체 전략 설명>",
-      "<중점 분야>",
-      "<사용자 니즈 반영 방식>"
-    ]
+    "notes": "<Single paragraph string: Cover (1) ingredients/meals actually used this week, (2) how last week feedback was applied (or this week's intent), (3) encouragement/tips. Use friendly tone. 500–950 characters. No bullets, numbers, or newlines. One continuous paragraph.>"
   },
   "shopping_list": {
-    "채소": ["<재료1>", "<재료2>"],
-    "과일": ["<재료1>"],
-    "육류·해산물": ["<재료1>", "<재료2>"],
-    "유제품·계란": ["<재료1>"],
-    "곡물·가공식품": ["<재료1>", "<재료2>"],
-    "양념·기타": ["<재료1>"]
+    "Vegetables": ["<item1>", "<item2>"],
+    "Fruits": ["<item1>"],
+    "Meat & Seafood": ["<item1>", "<item2>"],
+    "Dairy & Eggs": ["<item1>"],
+    "Grains & Processed": ["<item1>", "<item2>"],
+    "Seasonings & Other": ["<item1>"]
   },
   "substitutions": [
     {
-      "avoid": ["<피해야 할 음식>"],
-      "replace_with": ["<대체 음식1>", "<대체 음식2>"]
+      "avoid": ["<food to avoid>"],
+      "replace_with": ["<alternative1>", "<alternative2>"]
     }
   ]
 }
 
-요구사항:
-- 각 끼니는 2~4가지 음식으로 구성
-- 모든 음식은 한국에서 구하기 쉬운 일반적인 음식
-- 알러지 음식 절대 포함 금지
-- 식단 특성 준수 (예: 비건, 베지테리언)
-- 식단 목적에 맞게 최적화
-- 지난주 데이터가 있으면 약점 보완 및 강점 강화
-- **중요: plan_macro는 일주일(일~토, 7일) 전체 영양소의 총합입니다. 아침/점심/저녁 총 21끼의 영양소를 모두 합산하여 계산하세요.**
-- 일주일치 영양소 총합 예시: 칼로리 14000~17500kcal, 탄수화물 2000~2500g, 단백질 500~700g, 지방 400~600g 수준
-- 칼로리 계산: 탄수화물(4kcal/g) + 단백질(4kcal/g) + 지방(9kcal/g)
-- **shopping_list는 반드시 카테고리별 객체로 출력하세요. 키: 채소, 과일, 육류·해산물, 유제품·계란, 곡물·가공식품, 양념·기타. 해당하는 재료가 없는 카테고리는 빈 배열 []로 두세요.**
-- 모든 텍스트는 한국어로 작성
-- 마크다운 없이 순수 JSON만 출력`;
+Requirements:
+- 2–4 items per meal
+- Use commonly available foods
+- NEVER include allergenic foods
+- Respect diet characteristics (vegan, vegetarian, etc.)
+- Optimize for diet goal
+- If last week data exists, address weaknesses and build on strengths
+- **plan_macro is TOTAL for 7 days. Sum all 21 meals.**
+- Example: calories 14000–17500, carbs 2000–2500g, protein 500–700g, fat 400–600g
+- Calories: carbs(4) + protein(4) + fat(9) kcal/g
+- **shopping_list keys: Vegetables, Fruits, Meat & Seafood, Dairy & Eggs, Grains & Processed, Seasonings & Other. Use empty [] for categories with no items.**
+- rationale.considered: **English only.** Short factual lines, not report-style headers
+- rationale.notes: **English only.** Single string, friendly tone, 500–950 chars, one paragraph. Avoid clichés like "balance" or "optimize". Include 1–2 specific foods from the plan
+- Write ALL output text (plan, rationale, shopping_list, substitutions) in English. Never use Korean in rationale.considered or rationale.notes
+- Output pure JSON only, no markdown`;
 }
 
-/**
- * 지난주 섭취 기록 평가
- */
 export async function evaluateIntake(
   userProfile: UserProfile,
   lastWeekIntake: WeeklyIntake
@@ -278,20 +268,17 @@ export async function evaluateIntake(
 
     const content = completion.choices[0].message.content;
     if (!content) {
-      throw new Error('OpenAI 응답이 비어있습니다.');
+      throw new Error('OpenAI returned an empty response.');
     }
 
     const result = JSON.parse(content);
     return result;
   } catch (error: any) {
-    console.error('섭취 기록 평가 에러:', error);
-    throw new Error('AI 평가 생성 중 오류가 발생했습니다.');
+    console.error('Evaluate intake error:', error);
+    throw new Error('An error occurred while generating the evaluation.');
   }
 }
 
-/**
- * 주간 식단 생성
- */
 export async function generateMealPlan(
   userProfile: UserProfile,
   weekStartDate: string,
@@ -301,7 +288,7 @@ export async function generateMealPlan(
 ): Promise<{
   plan: WeeklyIntake;
   plan_macro: Macro;
-  rationale: { considered: string[]; notes: string[] };
+  rationale: { considered: string[]; notes: string };
   shopping_list: Record<string, string[]>;
   substitutions: Array<{ avoid: string[]; replace_with: string[] }>;
 }> {
@@ -323,25 +310,25 @@ export async function generateMealPlan(
 
     const content = completion.choices[0].message.content;
     if (!content) {
-      throw new Error('OpenAI 응답이 비어있습니다.');
+      throw new Error('OpenAI returned an empty response.');
     }
 
     const result = JSON.parse(content);
     const rawList = result.shopping_list;
     const shopping_list =
       Array.isArray(rawList)
-        ? { '기타': rawList }
-        : (typeof rawList === 'object' && rawList !== null ? rawList : { '기타': [] });
+        ? { 'Other': rawList }
+        : (typeof rawList === 'object' && rawList !== null ? rawList : { 'Other': [] });
 
     return {
       plan: result.plan,
       plan_macro: result.plan_macro,
-      rationale: result.rationale,
+      rationale: normalizeMealPlanRationale(result.rationale),
       shopping_list,
       substitutions: result.substitutions
     };
   } catch (error: any) {
-    console.error('식단 생성 에러:', error);
-    throw new Error('AI 식단 생성 중 오류가 발생했습니다.');
+    console.error('Meal plan generation error:', error);
+    throw new Error('An error occurred while generating the meal plan.');
   }
 }

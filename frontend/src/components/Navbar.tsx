@@ -33,7 +33,7 @@ function Navbar() {
     <nav className="navbar">
       <div className="navbar-container">
         <Link to="/" className="navbar-brand">
-          주간 식단 추천
+          Weekly Meal Plan
         </Link>
 
         <div className="navbar-right" ref={menuRef}>
@@ -44,7 +44,7 @@ function Navbar() {
               e.stopPropagation();
               setMenuOpen((v) => !v);
             }}
-            aria-label="메뉴"
+            aria-label="Menu"
             aria-expanded={menuOpen}
           >
             <span className="hamburger-line" />
@@ -56,27 +56,27 @@ function Navbar() {
             <div className="navbar-dropdown">
               {user ? (
                 <>
-                  <span className="navbar-dropdown-user">{user.name}님</span>
+                  <span className="navbar-dropdown-user">{user.name}</span>
                   <Link to="/meal-plan" className="navbar-dropdown-link" onClick={closeMenu}>
-                    식단 추천
+                    Meal Plan
                   </Link>
                   <Link to="/intake-history" className="navbar-dropdown-link" onClick={closeMenu}>
-                    섭취 기록
+                    Intake History
                   </Link>
                   <Link to="/profile" className="navbar-dropdown-link" onClick={closeMenu}>
-                    내 정보
+                    My Profile
                   </Link>
                   <button onClick={handleLogout} className="navbar-dropdown-link navbar-dropdown-btn">
-                    로그아웃
+                    Log Out
                   </button>
                 </>
               ) : (
                 <>
                   <Link to="/login" className="navbar-dropdown-link" onClick={closeMenu}>
-                    로그인
+                    Log In
                   </Link>
                   <Link to="/register" className="navbar-dropdown-link" onClick={closeMenu}>
-                    회원가입
+                    Sign Up
                   </Link>
                 </>
               )}

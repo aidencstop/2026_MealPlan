@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 
-// 환경변수를 가장 먼저 로드
+// Load env vars first
 dotenv.config();
 
 import express from 'express';
@@ -16,36 +16,36 @@ import intakeHistoryRoutes from './routes/intakeHistory.js';
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// 미들웨어
+// Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 헬스체크
+// Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: '서버가 정상 작동 중입니다.' });
+  res.json({ status: 'OK', message: 'Server is running.' });
 });
 
-// 라우트 등록
+// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/meal-plan', mealPlanRoutes);
 app.use('/api/intake-history', intakeHistoryRoutes);
 
-// 에러 핸들러
+// Error handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('Error:', err);
   res.status(err.status || 500).json({
-    error: err.message || '서버 에러가 발생했습니다.'
+    error: err.message || 'An error occurred on the server.'
   });
 });
 
-// 404 핸들러
+// 404 handler
 app.use((req, res) => {
-  res.status(404).json({ error: '존재하지 않는 경로입니다.' });
+  res.status(404).json({ error: 'Route not found.' });
 });
 
-// 서버 시작
+// Start server
 app.listen(PORT, () => {
   console.log(`🚀 서버가 포트 ${PORT}에서 실행 중입니다.`);
   console.log(`http://localhost:${PORT}`);

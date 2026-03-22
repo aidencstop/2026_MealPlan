@@ -1,15 +1,15 @@
 import axios from 'axios';
 
-// Axios 인스턴스 생성
+// Axios instance
 const api = axios.create({
-  baseURL: '/api', // Vite 프록시 사용
+  baseURL: '/api', // Vite proxy
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Request 인터셉터: 토큰 자동 추가
+// Request interceptor: add token
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -23,12 +23,12 @@ api.interceptors.request.use(
   }
 );
 
-// Response 인터셉터: 에러 처리
+// Response interceptor: error handling
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // 인증 실패 시 로그인 페이지로 이동
+      // Redirect to login on auth failure
       localStorage.removeItem('token');
       window.location.href = '/login';
     }

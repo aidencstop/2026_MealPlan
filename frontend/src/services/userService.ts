@@ -2,7 +2,7 @@ import api from './api';
 import { UserProfile, User, HealthCondition } from '../types';
 
 /**
- * 사용자 프로필 조회
+ * Get user profile
  */
 export async function getUserProfile(): Promise<UserProfile> {
   const response = await api.get<UserProfile>('/users/profile');
@@ -10,7 +10,7 @@ export async function getUserProfile(): Promise<UserProfile> {
 }
 
 /**
- * 사용자 프로필 수정
+ * Update user profile
  */
 export async function updateUserProfile(data: {
   name?: string;
@@ -24,7 +24,7 @@ export async function updateUserProfile(data: {
 }
 
 /**
- * 건강 정보 조회
+ * Get health conditions
  */
 export async function getHealthConditions(): Promise<HealthCondition[]> {
   const response = await api.get('/users/health-conditions');
@@ -32,7 +32,7 @@ export async function getHealthConditions(): Promise<HealthCondition[]> {
 }
 
 /**
- * 건강 정보 수정
+ * Update health conditions
  */
 export async function updateHealthConditions(conditions: Array<{
   condition_type: string;

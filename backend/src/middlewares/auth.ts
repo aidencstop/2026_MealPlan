@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-// Request 타입 확장
+// Extend Request type
 declare global {
   namespace Express {
     interface Request {
@@ -16,7 +16,7 @@ export interface JwtPayload {
 }
 
 /**
- * JWT 토큰 검증 미들웨어
+ * JWT token verification middleware
  */
 export function authenticateToken(
   req: Request, 
@@ -34,7 +34,7 @@ export function authenticateToken(
 
   if (!token) {
     console.log('❌ 토큰 없음');
-    res.status(401).json({ error: '인증 토큰이 필요합니다.' });
+    res.status(401).json({ error: 'Authentication token is required.' });
     return;
   }
 
@@ -49,7 +49,7 @@ export function authenticateToken(
     next();
   } catch (error: any) {
     console.log('❌ 토큰 검증 실패:', error.message);
-    res.status(403).json({ error: '유효하지 않은 토큰입니다.' });
+    res.status(403).json({ error: 'Invalid token.' });
     return;
   }
 }

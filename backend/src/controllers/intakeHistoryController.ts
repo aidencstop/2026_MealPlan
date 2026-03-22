@@ -2,12 +2,12 @@ import { Request, Response } from 'express';
 import { getIntakeHistory, getIntakeRecordById } from '../services/intakeService.js';
 
 /**
- * 섭취 기록 목록 조회 (페이지네이션)
+ * Get intake history (paginated)
  */
 export async function getHistory(req: Request, res: Response): Promise<void> {
   try {
     if (!req.userId) {
-      res.status(401).json({ error: '인증이 필요합니다.' });
+      res.status(401).json({ error: 'Authentication required.' });
       return;
     }
 
@@ -19,35 +19,35 @@ export async function getHistory(req: Request, res: Response): Promise<void> {
     res.json(result);
   } catch (error: any) {
     console.error('히스토리 조회 에러:', error);
-    res.status(500).json({ error: '히스토리 조회 중 오류가 발생했습니다.' });
+    res.status(500).json({ error: 'An error occurred while fetching history.' });
   }
 }
 
 /**
- * 특정 섭취 기록 상세 조회
+ * Get intake record detail
  */
 export async function getRecordDetail(req: Request, res: Response): Promise<void> {
   try {
     if (!req.userId) {
-      res.status(401).json({ error: '인증이 필요합니다.' });
+      res.status(401).json({ error: 'Authentication required.' });
       return;
     }
 
   const recordId = req.params.id;
   if (!recordId) {
-    res.status(400).json({ error: '올바른 ID를 입력해주세요.' });
+    res.status(400).json({ error: 'Please provide a valid ID.' });
     return;
   }
 
   const record = await getIntakeRecordById(req.userId, recordId);
     if (!record) {
-      res.status(404).json({ error: '기록을 찾을 수 없습니다.' });
+      res.status(404).json({ error: 'Record not found.' });
       return;
     }
 
     res.json({ record });
   } catch (error: any) {
     console.error('기록 상세 조회 에러:', error);
-    res.status(500).json({ error: '기록 상세 조회 중 오류가 발생했습니다.' });
+    res.status(500).json({ error: 'An error occurred while fetching record details.' });
   }
 }

@@ -1,4 +1,4 @@
-// 공통 타입 정의
+// Shared type definitions
 
 export interface User {
   id: string;
@@ -80,7 +80,7 @@ export interface WeeklyIntakeRecord {
 
 export interface MealPlanRationale {
   considered: string[];
-  notes: string[];
+  notes: string;
 }
 
 export interface Substitution {

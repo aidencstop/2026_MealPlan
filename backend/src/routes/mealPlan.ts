@@ -9,19 +9,19 @@ import { authenticateToken } from '../middlewares/auth.js';
 
 const router = express.Router();
 
-// 모든 라우트는 인증 필요
+// All routes require auth
 router.use(authenticateToken);
 
-// 금주 식단 추천 조회
+// Get current week meal plan
 router.get('/current', getCurrentMealPlan);
 
-// 금주 식단 다시 생성
+// Regenerate meal plan
 router.post('/regenerate', regenerateMealPlan);
 
-// 지난주 섭취 기록 조회 (편집용)
+// Get last week intake (for edit)
 router.get('/last-week-intake', getLastWeekIntake);
 
-// 지난주 섭취 기록 저장
+// Save last week intake
 router.post('/save-intake', saveLastWeekIntake);
 
 export default router;

@@ -9,7 +9,7 @@ function PrivateRoute({ children }: PrivateRouteProps) {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <div className="loading">로딩 중...</div>;
+    return <div className="loading">Loading...</div>;
   }
 
   if (!user) {

@@ -9,14 +9,14 @@ import { authenticateToken } from '../middlewares/auth.js';
 
 const router = express.Router();
 
-// 모든 라우트는 인증 필요
+// All routes require auth
 router.use(authenticateToken);
 
-// 프로필 조회 및 수정
+// Profile get/update
 router.get('/profile', getProfile);
 router.put('/profile', updateProfile);
 
-// 건강 정보 조회 및 수정
+// Health conditions get/update
 router.get('/health-conditions', getHealthConditions);
 router.put('/health-conditions', updateHealthConditionsHandler);
 

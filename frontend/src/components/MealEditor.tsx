@@ -40,7 +40,7 @@ function MealEditor({ meals, onChange, label }: MealEditorProps) {
               className="meal-input"
               value={meal.name}
               onChange={(e) => updateMeal(index, e.target.value)}
-              placeholder="음식 이름"
+              placeholder="Food name"
             />
             <button
               type="button"
@@ -60,14 +60,14 @@ function MealEditor({ meals, onChange, label }: MealEditorProps) {
           value={newMealName}
           onChange={(e) => setNewMealName(e.target.value)}
           onKeyPress={(e) => e.key === 'Enter' && addMeal()}
-          placeholder="음식 추가..."
+          placeholder="Add food..."
         />
         <button
           type="button"
           className="btn btn-secondary btn-sm"
           onClick={addMeal}
         >
-          추가
+          Add
         </button>
       </div>
     </div>

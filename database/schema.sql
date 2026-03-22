@@ -1,6 +1,6 @@
--- 데이터베이스 스키마
+-- Database schema
 
--- users 테이블: 사용자 기본 정보
+-- users: user basic info
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
   username VARCHAR(50) UNIQUE NOT NULL,
@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS users (
   updated_at TIMESTAMP DEFAULT NOW()
 );
 
--- health_conditions 테이블: 사용자별 질병/식이 이슈
+-- health_conditions: user health/diet conditions
 CREATE TABLE IF NOT EXISTS health_conditions (
   id SERIAL PRIMARY KEY,
   user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS health_conditions (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
--- weekly_intake_records 테이블: 주간 섭취 기록
+-- weekly_intake_records: weekly intake records
 CREATE TABLE IF NOT EXISTS weekly_intake_records (
   id SERIAL PRIMARY KEY,
   user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS weekly_intake_records (
   UNIQUE(user_id, year, week_start_date)
 );
 
--- weekly_meal_plans 테이블: 주간 추천 식단
+-- weekly_meal_plans: weekly meal plans
 CREATE TABLE IF NOT EXISTS weekly_meal_plans (
   id SERIAL PRIMARY KEY,
   user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS weekly_meal_plans (
   UNIQUE(user_id, year, week_start_date)
 );
 
--- 인덱스 생성
+-- Indexes
 CREATE INDEX IF NOT EXISTS idx_weekly_intake_user_date 
   ON weekly_intake_records(user_id, year, week_start_date DESC);
 
@@ -67,7 +67,7 @@ CREATE INDEX IF NOT EXISTS idx_weekly_plans_user_date
 CREATE INDEX IF NOT EXISTS idx_health_conditions_user 
   ON health_conditions(user_id);
 
--- updated_at 자동 업데이트 함수
+-- updated_at auto-update function
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -76,10 +76,10 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
--- users 테이블 트리거
+-- users trigger
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- weekly_intake_records 테이블 트리거
+-- weekly_intake_records trigger
 CREATE TRIGGER update_intake_updated_at BEFORE UPDATE ON weekly_intake_records
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

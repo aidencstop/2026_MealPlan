@@ -23,7 +23,7 @@ function IntakeHistory() {
       setHasMore(data.hasMore);
       setPage(prev => prev + 1);
     } catch (err: any) {
-      setError(err.response?.data?.error || '데이터를 불러오는데 실패했습니다.');
+      setError(err.response?.data?.error || 'Failed to load data.');
     } finally {
       setLoading(false);
     }
@@ -68,25 +68,25 @@ function IntakeHistory() {
   };
 
   const dayNames: Record<string, string> = {
-    sun: '일요일',
-    mon: '월요일',
-    tue: '화요일',
-    wed: '수요일',
-    thu: '목요일',
-    fri: '금요일',
-    sat: '토요일'
+    sun: 'Sunday',
+    mon: 'Monday',
+    tue: 'Tuesday',
+    wed: 'Wednesday',
+    thu: 'Thursday',
+    fri: 'Friday',
+    sat: 'Saturday'
   };
 
   return (
     <div className="page-container">
-      <h1 className="page-title">섭취 기록</h1>
-      <p className="page-subtitle">주별 식단 섭취 기록을 확인할 수 있습니다.</p>
+      <h1 className="page-title">Intake History</h1>
+      <p className="page-subtitle">View your weekly meal intake records.</p>
 
       {error && <div className="error-message">{error}</div>}
 
       {records.length === 0 && !loading ? (
         <div className="empty-state">
-          <p>아직 저장된 섭취 기록이 없습니다.</p>
+          <p>No intake records yet.</p>
         </div>
       ) : (
         <div className="history-list">
@@ -101,7 +101,7 @@ function IntakeHistory() {
                     {record.week_start_date} ~ {record.week_end_date}
                   </h3>
                   <p className="history-date">
-                    저장일: {new Date(record.created_at).toLocaleDateString('ko-KR')}
+                    Saved: {new Date(record.created_at).toLocaleDateString('en-US')}
                   </p>
                 </div>
                 <button className="expand-btn">
@@ -111,30 +111,30 @@ function IntakeHistory() {
 
               {expandedIds.has(record.id) && (
                 <div className="history-content">
-                  {/* 영양소 */}
+                  {/* Macros */}
                   <div className="section">
-                    <h4>주간 영양소</h4>
+                    <h4>Weekly Macros</h4>
                     <div className="macro-info">
                       <div className="macro-item">
-                        <span className="macro-label">칼로리</span>
+                        <span className="macro-label">Calories</span>
                         <span className="macro-value">
                           {record.macro.calories?.toLocaleString() || 0} kcal
                         </span>
                       </div>
                       <div className="macro-item">
-                        <span className="macro-label">탄수화물</span>
+                        <span className="macro-label">Carbs</span>
                         <span className="macro-value">
                           {record.macro.carbs_g}g ({record.macro.ratio.carbs_pct}%)
                         </span>
                       </div>
                       <div className="macro-item">
-                        <span className="macro-label">단백질</span>
+                        <span className="macro-label">Protein</span>
                         <span className="macro-value">
                           {record.macro.protein_g}g ({record.macro.ratio.protein_pct}%)
                         </span>
                       </div>
                       <div className="macro-item">
-                        <span className="macro-label">지방</span>
+                        <span className="macro-label">Fat</span>
                         <span className="macro-value">
                           {record.macro.fat_g}g ({record.macro.ratio.fat_pct}%)
                         </span>
@@ -142,31 +142,31 @@ function IntakeHistory() {
                     </div>
                   </div>
 
-                  {/* 섭취 내역 */}
+                  {/* Intake */}
                   <div className="section">
-                    <h4>섭취 내역</h4>
+                    <h4>Intake</h4>
                     <div className="intake-grid">
                       {(Object.keys(record.intake_data) as Array<keyof WeeklyIntake>).map(day => (
                         <div key={day} className="day-intake">
                           <strong>{dayNames[day]}</strong>
                           <div className="meal-list">
                             <div>
-                              <span className="meal-time">아침:</span>
+                              <span className="meal-time">Breakfast:</span>
                               {record.intake_data[day].breakfast.length > 0
                                 ? record.intake_data[day].breakfast.map(m => m.name).join(', ')
-                                : '없음'}
+                                : 'None'}
                             </div>
                             <div>
-                              <span className="meal-time">점심:</span>
+                              <span className="meal-time">Lunch:</span>
                               {record.intake_data[day].lunch.length > 0
                                 ? record.intake_data[day].lunch.map(m => m.name).join(', ')
-                                : '없음'}
+                                : 'None'}
                             </div>
                             <div>
-                              <span className="meal-time">저녁:</span>
+                              <span className="meal-time">Dinner:</span>
                               {record.intake_data[day].dinner.length > 0
                                 ? record.intake_data[day].dinner.map(m => m.name).join(', ')
-                                : '없음'}
+                                : 'None'}
                             </div>
                           </div>
                         </div>
@@ -174,9 +174,9 @@ function IntakeHistory() {
                     </div>
                   </div>
 
-                  {/* 평가 */}
+                  {/* Evaluation */}
                   <div className="section">
-                    <h4>잘된 점</h4>
+                    <h4>Strengths</h4>
                     <ul className="eval-list positive">
                       {record.strengths.map((item, i) => (
                         <li key={i}>{item}</li>
@@ -185,7 +185,7 @@ function IntakeHistory() {
                   </div>
 
                   <div className="section">
-                    <h4>아쉬운 점</h4>
+                    <h4>Weaknesses</h4>
                     <ul className="eval-list negative">
                       {record.weaknesses.map((item, i) => (
                         <li key={i}>{item}</li>
@@ -194,7 +194,7 @@ function IntakeHistory() {
                   </div>
 
                   <div className="section">
-                    <h4>개선 방법</h4>
+                    <h4>Improvements</h4>
                     <ul className="eval-list">
                       {record.improvements.map((item, i) => (
                         <li key={i}>{item}</li>
@@ -203,7 +203,7 @@ function IntakeHistory() {
                   </div>
 
                   <div className="section">
-                    <h4>주의사항</h4>
+                    <h4>Cautions</h4>
                     <ul className="eval-list warning">
                       {record.cautions.map((item, i) => (
                         <li key={i}>{item}</li>
@@ -217,7 +217,7 @@ function IntakeHistory() {
         </div>
       )}
 
-      {loading && <div className="loading">로딩 중...</div>}
+      {loading && <div className="loading">Loading...</div>}
       
       <div ref={observerTarget} style={{ height: '20px' }} />
     </div>

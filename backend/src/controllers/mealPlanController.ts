@@ -8,18 +8,18 @@ import { saveIntakeRecord, getIntakeRecord } from '../services/intakeService.js'
 import { getLastWeekBounds, getCurrentWeekBounds } from '../utils/weekUtils.js';
 
 /**
- * 금주 식단 추천 조회
+ * Get current week meal plan
  */
 export async function getCurrentMealPlan(req: Request, res: Response): Promise<void> {
   try {
     if (!req.userId) {
-      res.status(401).json({ error: '인증이 필요합니다.' });
+      res.status(401).json({ error: 'Authentication required.' });
       return;
     }
 
     const mealPlan = await getCurrentWeekMealPlan(req.userId);
     
-    // 지난주 섭취 기록도 함께 조회
+    // Also fetch last week intake
     const lastWeek = getLastWeekBounds();
     const lastWeekRecord = await getIntakeRecord(
       req.userId,
@@ -33,17 +33,17 @@ export async function getCurrentMealPlan(req: Request, res: Response): Promise<v
     });
   } catch (error: any) {
     console.error('식단 조회 에러:', error);
-    res.status(500).json({ error: error.message || '식단 조회 중 오류가 발생했습니다.' });
+    res.status(500).json({ error: error.message || 'An error occurred while fetching meal plan.' });
   }
 }
 
 /**
- * 지난주 섭취 기록 조회 (편집용)
+ * Get last week intake (for edit)
  */
 export async function getLastWeekIntake(req: Request, res: Response): Promise<void> {
   try {
     if (!req.userId) {
-      res.status(401).json({ error: '인증이 필요합니다.' });
+      res.status(401).json({ error: 'Authentication required.' });
       return;
     }
 
@@ -51,24 +51,24 @@ export async function getLastWeekIntake(req: Request, res: Response): Promise<vo
     res.json(intakeData);
   } catch (error: any) {
     console.error('지난주 기록 조회 에러:', error);
-    res.status(500).json({ error: '지난주 기록 조회 중 오류가 발생했습니다.' });
+    res.status(500).json({ error: 'An error occurred while fetching last week record.' });
   }
 }
 
 /**
- * 지난주 섭취 기록 저장
+ * Save last week intake
  */
 export async function saveLastWeekIntake(req: Request, res: Response): Promise<void> {
   try {
     if (!req.userId) {
-      res.status(401).json({ error: '인증이 필요합니다.' });
+      res.status(401).json({ error: 'Authentication required.' });
       return;
     }
 
     const { year, week_start_date, week_end_date, intake_data } = req.body;
 
     if (!year || !week_start_date || !week_end_date || !intake_data) {
-      res.status(400).json({ error: '필수 정보를 모두 입력해주세요.' });
+      res.status(400).json({ error: 'Please fill in all required fields.' });
       return;
     }
 
@@ -81,34 +81,34 @@ export async function saveLastWeekIntake(req: Request, res: Response): Promise<v
     );
 
     res.json({
-      message: '섭취 기록이 저장되었습니다.',
+      message: 'Intake record saved.',
       record
     });
   } catch (error: any) {
     console.error('섭취 기록 저장 에러:', error);
-    res.status(500).json({ error: error.message || '섭취 기록 저장 중 오류가 발생했습니다.' });
+    res.status(500).json({ error: error.message || 'An error occurred while saving intake record.' });
   }
 }
 
 /**
- * 금주 식단 삭제 (다시 추천받기)
+ * Regenerate meal plan (delete & create new)
  */
 export async function regenerateMealPlan(req: Request, res: Response): Promise<void> {
   try {
     if (!req.userId) {
-      res.status(401).json({ error: '인증이 필요합니다.' });
+      res.status(401).json({ error: 'Authentication required.' });
       return;
     }
 
     const currentWeek = getCurrentWeekBounds();
     
-    // 기존 식단 삭제
+    // Delete existing plan
     await deleteMealPlan(req.userId, currentWeek.year, currentWeek.weekStartDate);
     
-    // 새로운 식단 생성
+    // Generate new plan
     const mealPlan = await getCurrentWeekMealPlan(req.userId);
     
-    // 지난주 섭취 기록도 함께 조회
+    // Also fetch last week intake
     const lastWeek = getLastWeekBounds();
     const lastWeekRecord = await getIntakeRecord(
       req.userId,
@@ -117,12 +117,12 @@ export async function regenerateMealPlan(req: Request, res: Response): Promise<v
     );
 
     res.json({
-      message: '새로운 식단이 생성되었습니다.',
+      message: 'New meal plan has been generated.',
       mealPlan,
       lastWeekRecord: lastWeekRecord || null
     });
   } catch (error: any) {
     console.error('식단 재생성 에러:', error);
-    res.status(500).json({ error: error.message || '식단 재생성 중 오류가 발생했습니다.' });
+    res.status(500).json({ error: error.message || 'An error occurred while regenerating meal plan.' });
   }
 }

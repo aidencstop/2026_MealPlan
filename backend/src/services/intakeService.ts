@@ -1,10 +1,45 @@
 import { db } from '../db/firebase.js';
-import { WeeklyIntakeRecord, WeeklyIntake, IntakeEvaluation } from '../types/index.js';
+import { WeeklyIntakeRecord, WeeklyIntake, IntakeEvaluation, MealItem } from '../types/index.js';
 import { getUserProfile } from './userService.js';
 import { evaluateIntake } from './openaiService.js';
 
+const MAX_CHARS_PER_ITEM = 80;
+const MAX_ITEMS_PER_MEAL = 10;
+
+function trimItemName(s: string): string {
+  return s.trim().replace(/\s+/g, ' ').slice(0, MAX_CHARS_PER_ITEM);
+}
+
+function sanitizeMealItems(items: (MealItem | string)[]): MealItem[] {
+  return items
+    .map((item) => {
+      const raw = typeof item === 'string' ? item : (item?.name ?? '');
+      return {
+        name: trimItemName(String(raw)),
+        portion: item && typeof item === 'object' && item.portion ? trimItemName(String(item.portion)) : undefined,
+        note: item && typeof item === 'object' && item.note ? trimItemName(String(item.note)) : undefined
+      };
+    })
+    .filter((item) => item.name.length > 0)
+    .slice(0, MAX_ITEMS_PER_MEAL);
+}
+
+function sanitizeIntakeData(data: WeeklyIntake): WeeklyIntake {
+  const days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
+  const result: Record<string, any> = {};
+  for (const day of days) {
+    const d = data[day];
+    result[day] = {
+      breakfast: sanitizeMealItems(d?.breakfast ?? []),
+      lunch: sanitizeMealItems(d?.lunch ?? []),
+      dinner: sanitizeMealItems(d?.dinner ?? [])
+    };
+  }
+  return result as WeeklyIntake;
+}
+
 /**
- * 특정 주의 섭취 기록 조회
+ * Get intake record for a specific week
  */
 export async function getIntakeRecord(
   userId: string,
@@ -44,7 +79,7 @@ export async function getIntakeRecord(
 }
 
 /**
- * 섭취 기록 저장 (평가 포함)
+ * Save intake record (with AI evaluation)
  */
 export async function saveIntakeRecord(
   userId: string,
@@ -53,16 +88,18 @@ export async function saveIntakeRecord(
   weekEndDate: string,
   intakeData: WeeklyIntake
 ): Promise<WeeklyIntakeRecord> {
-  // 사용자 프로필 조회
+  const sanitized = sanitizeIntakeData(intakeData);
+
+  // Fetch user profile
   const userProfile = await getUserProfile(userId);
   if (!userProfile) {
-    throw new Error('사용자를 찾을 수 없습니다.');
+    throw new Error('User not found.');
   }
 
-  // AI 평가 생성
-  const evaluation = await evaluateIntake(userProfile, intakeData);
+  // Generate AI evaluation
+  const evaluation = await evaluateIntake(userProfile, sanitized);
 
-  // 기존 기록 확인
+  // Check existing record
   const existingRecord = await getIntakeRecord(userId, year, weekStartDate);
 
   const recordData = {
@@ -70,7 +107,7 @@ export async function saveIntakeRecord(
     year,
     week_start_date: weekStartDate,
     week_end_date: weekEndDate,
-    intake_data: intakeData,
+    intake_data: sanitized,
     macro: evaluation.macro,
     strengths: evaluation.strengths,
     weaknesses: evaluation.weaknesses,
@@ -81,7 +118,7 @@ export async function saveIntakeRecord(
   };
 
   if (existingRecord) {
-    // 업데이트
+    // Update
     await db
       .collection('weekly_intake_records')
       .doc(existingRecord.id)
@@ -95,7 +132,7 @@ export async function saveIntakeRecord(
       ...recordData
     };
   } else {
-    // 새로 생성
+    // Create new
     const docRef = await db.collection('weekly_intake_records').add(recordData);
 
     return {
@@ -106,21 +143,21 @@ export async function saveIntakeRecord(
 }
 
 /**
- * 섭취 기록 목록 조회 (페이지네이션)
+ * Get intake history (paginated)
  */
 export async function getIntakeHistory(
   userId: string,
   page: number = 1,
   limit: number = 3
 ): Promise<{ records: WeeklyIntakeRecord[]; total: number; hasMore: boolean }> {
-  // 전체 개수 조회
+  // Count total
   const allSnapshot = await db
     .collection('weekly_intake_records')
     .where('user_id', '==', userId)
     .get();
   const total = allSnapshot.size;
 
-  // 페이지네이션 쿼리
+  // Pagination query
   let query = db
     .collection('weekly_intake_records')
     .where('user_id', '==', userId)
@@ -128,7 +165,7 @@ export async function getIntakeHistory(
     .orderBy('week_start_date', 'desc')
     .limit(limit);
 
-  // offset 계산 (Firestore는 offset을 직접 지원하지 않으므로 다른 방식 사용)
+  // Offset (Firestore has no native offset, use startAfter)
   const offset = (page - 1) * limit;
   if (offset > 0) {
     const skipSnapshot = await db
@@ -174,7 +211,7 @@ export async function getIntakeHistory(
 }
 
 /**
- * 특정 섭취 기록 상세 조회
+ * Get intake record by ID
  */
 export async function getIntakeRecordById(
   userId: string,
@@ -188,7 +225,7 @@ export async function getIntakeRecordById(
 
   const data = doc.data()!;
 
-  // 사용자 확인
+  // Verify user ownership
   if (data.user_id !== userId) {
     return null;
   }

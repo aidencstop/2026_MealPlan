@@ -20,7 +20,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // 초기 로드 시 사용자 정보 가져오기
+  // Load user on init
   useEffect(() => {
     async function loadUser() {
       if (hasToken()) {

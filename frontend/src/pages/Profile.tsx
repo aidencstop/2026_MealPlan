@@ -5,24 +5,24 @@ import { UserProfile } from '../types';
 import './Profile.css';
 
 const HEALTH_CONDITIONS = [
-  { value: 'lactose_intolerance', label: '유당불내증' },
-  { value: 'allergy_peanuts', label: '땅콩 알러지' },
-  { value: 'allergy_shellfish', label: '갑각류 알러지' },
-  { value: 'allergy_eggs', label: '계란 알러지' },
-  { value: 'allergy_milk', label: '우유 알러지' },
-  { value: 'eating_disorder', label: '식이장애' },
-  { value: 'diabetes', label: '당뇨' },
-  { value: 'obesity', label: '비만' },
-  { value: 'hypertension', label: '고혈압' },
-  { value: 'hyperlipidemia', label: '고지혈증' }
+  { value: 'lactose_intolerance', label: 'Lactose intolerance' },
+  { value: 'allergy_peanuts', label: 'Peanut allergy' },
+  { value: 'allergy_shellfish', label: 'Shellfish allergy' },
+  { value: 'allergy_eggs', label: 'Egg allergy' },
+  { value: 'allergy_milk', label: 'Milk allergy' },
+  { value: 'eating_disorder', label: 'Eating disorder' },
+  { value: 'diabetes', label: 'Diabetes' },
+  { value: 'obesity', label: 'Obesity' },
+  { value: 'hypertension', label: 'Hypertension' },
+  { value: 'hyperlipidemia', label: 'Hyperlipidemia' }
 ];
 
 const DIET_CHARACTERISTICS = [
-  { value: 'vegan', label: '비건' },
-  { value: 'vegetarian', label: '베지테리언' },
-  { value: 'pescatarian', label: '페스코 베지테리언' },
-  { value: 'halal', label: '할랄' },
-  { value: 'kosher', label: '코셔' }
+  { value: 'vegan', label: 'Vegan' },
+  { value: 'vegetarian', label: 'Vegetarian' },
+  { value: 'pescatarian', label: 'Pescatarian' },
+  { value: 'halal', label: 'Halal' },
+  { value: 'kosher', label: 'Kosher' }
 ];
 
 function Profile() {
@@ -33,7 +33,7 @@ function Profile() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // 폼 상태
+  // Form state
   const [name, setName] = useState('');
   const [gender, setGender] = useState<'male' | 'female' | 'other'>('male');
   const [age, setAge] = useState('');
@@ -51,7 +51,7 @@ function Profile() {
       const data = await getUserProfile();
       setProfile(data);
       
-      // 폼 초기화
+      // Reset form
       setName(data.user.name);
       setGender(data.user.gender);
       setAge(data.user.age.toString());
@@ -59,7 +59,7 @@ function Profile() {
       setDietCharacteristics(data.user.diet_characteristics);
       setHealthConditions(data.health_conditions.map(c => c.condition_type));
     } catch (err: any) {
-      setError(err.response?.data?.error || '프로필을 불러오는데 실패했습니다.');
+      setError(err.response?.data?.error || 'Failed to load profile.');
     } finally {
       setLoading(false);
     }
@@ -72,7 +72,7 @@ function Profile() {
     setSaving(true);
 
     try {
-      // 기본 정보 업데이트
+      // Update basic info
       await updateUserProfile({
         name,
         gender,
@@ -81,7 +81,7 @@ function Profile() {
         diet_characteristics: dietCharacteristics
       });
 
-      // 건강 정보 업데이트
+      // Update health info
       await updateHealthConditions(
         healthConditions.map(condition => ({
           condition_type: condition,
@@ -89,11 +89,11 @@ function Profile() {
         }))
       );
 
-      setSuccess('프로필이 성공적으로 수정되었습니다!');
+      setSuccess('Profile updated successfully!');
       await refreshUser();
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
-      setError(err.response?.data?.error || '프로필 수정에 실패했습니다.');
+      setError(err.response?.data?.error || 'Failed to update profile.');
     } finally {
       setSaving(false);
     }
@@ -116,17 +116,17 @@ function Profile() {
   };
 
   if (loading) {
-    return <div className="loading">로딩 중...</div>;
+    return <div className="loading">Loading...</div>;
   }
 
   if (!profile) {
-    return <div className="error-message">프로필을 찾을 수 없습니다.</div>;
+    return <div className="error-message">Profile not found.</div>;
   }
 
   return (
     <div className="page-container">
-      <h1 className="page-title">내 정보</h1>
-      <p className="page-subtitle">프로필 정보를 수정할 수 있습니다.</p>
+      <h1 className="page-title">My Profile</h1>
+      <p className="page-subtitle">Edit your profile information.</p>
 
       {error && <div className="error-message">{error}</div>}
       {success && <div className="success-message">{success}</div>}
@@ -134,18 +134,18 @@ function Profile() {
       <div className="card">
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label">사용자명</label>
+            <label className="form-label">Username</label>
             <input
               type="text"
               className="form-input"
               value={profile.user.username}
               disabled
             />
-            <small className="form-help">사용자명은 변경할 수 없습니다.</small>
+            <small className="form-help">Username cannot be changed.</small>
           </div>
 
           <div className="form-group">
-            <label className="form-label">이름 *</label>
+            <label className="form-label">Name *</label>
             <input
               type="text"
               className="form-input"
@@ -157,7 +157,7 @@ function Profile() {
           </div>
 
           <div className="form-group">
-            <label className="form-label">성별 *</label>
+            <label className="form-label">Gender *</label>
             <select
               className="form-select"
               value={gender}
@@ -165,14 +165,14 @@ function Profile() {
               required
               disabled={saving}
             >
-              <option value="male">남성</option>
-              <option value="female">여성</option>
-              <option value="other">기타</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
             </select>
           </div>
 
           <div className="form-group">
-            <label className="form-label">나이 *</label>
+            <label className="form-label">Age *</label>
             <input
               type="number"
               className="form-input"
@@ -186,7 +186,7 @@ function Profile() {
           </div>
 
           <div className="form-group">
-            <label className="form-label">식단 목적 *</label>
+            <label className="form-label">Diet goal *</label>
             <select
               className="form-select"
               value={dietGoal}
@@ -194,14 +194,14 @@ function Profile() {
               required
               disabled={saving}
             >
-              <option value="maintenance">현상 유지</option>
-              <option value="weight_gain">체중 증가</option>
-              <option value="weight_loss">체중 감량</option>
+              <option value="maintenance">Maintenance</option>
+              <option value="weight_gain">Weight gain</option>
+              <option value="weight_loss">Weight loss</option>
             </select>
           </div>
 
           <div className="form-group">
-            <label className="form-label">식단 특성</label>
+            <label className="form-label">Diet characteristics</label>
             <div className="checkbox-group">
               {DIET_CHARACTERISTICS.map(item => (
                 <label key={item.value} className="checkbox-item">
@@ -218,7 +218,7 @@ function Profile() {
           </div>
 
           <div className="form-group">
-            <label className="form-label">질병 / 알러지</label>
+            <label className="form-label">Conditions / Allergies</label>
             <div className="checkbox-group">
               {HEALTH_CONDITIONS.map(item => (
                 <label key={item.value} className="checkbox-item">
@@ -240,16 +240,16 @@ function Profile() {
               className="btn btn-primary"
               disabled={saving}
             >
-              {saving ? '저장 중...' : '저장'}
+              {saving ? 'Saving...' : 'Save'}
             </button>
           </div>
         </form>
       </div>
 
       <div className="card">
-        <h2 className="card-title">가입 정보</h2>
-        <p>가입일: {new Date(profile.user.created_at).toLocaleDateString('ko-KR')}</p>
-        <p>마지막 수정: {new Date(profile.user.updated_at).toLocaleDateString('ko-KR')}</p>
+        <h2 className="card-title">Account info</h2>
+        <p>Joined: {new Date(profile.user.created_at).toLocaleDateString('en-US')}</p>
+        <p>Last updated: {new Date(profile.user.updated_at).toLocaleDateString('en-US')}</p>
       </div>
     </div>
   );

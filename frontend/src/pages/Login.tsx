@@ -23,7 +23,7 @@ function Login() {
       login(response.user);
       navigate('/meal-plan');
     } catch (err: any) {
-      setError(err.response?.data?.error || '로그인에 실패했습니다.');
+      setError(err.response?.data?.error || 'Login failed.');
     } finally {
       setLoading(false);
     }
@@ -32,13 +32,13 @@ function Login() {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h1 className="auth-title">로그인</h1>
+        <h1 className="auth-title">Log In</h1>
         
         {error && <div className="error-message">{error}</div>}
         
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
-            <label className="form-label">사용자명</label>
+            <label className="form-label">Username</label>
             <input
               type="text"
               className="form-input"
@@ -50,7 +50,7 @@ function Login() {
           </div>
 
           <div className="form-group">
-            <label className="form-label">비밀번호</label>
+            <label className="form-label">Password</label>
             <input
               type="password"
               className="form-input"
@@ -66,12 +66,12 @@ function Login() {
             className="btn btn-primary btn-block"
             disabled={loading}
           >
-            {loading ? '로그인 중...' : '로그인'}
+            {loading ? 'Signing in...' : 'Log In'}
           </button>
         </form>
 
         <div className="auth-footer">
-          계정이 없으신가요? <Link to="/register">회원가입</Link>
+          Don't have an account? <Link to="/register">Sign Up</Link>
         </div>
       </div>
     </div>

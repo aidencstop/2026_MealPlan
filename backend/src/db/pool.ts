@@ -5,15 +5,15 @@ dotenv.config();
 
 const { Pool } = pg;
 
-// PostgreSQL 연결 풀 생성
+// PostgreSQL connection pool
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  max: 20, // 최대 연결 수
+  max: 20, // Max connections
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 2000,
 });
 
-// 연결 테스트
+// Connection test
 pool.on('connect', () => {
   console.log('✅ PostgreSQL 연결 성공');
 });

@@ -5,7 +5,7 @@ import { User, HealthCondition, UserProfile } from '../types/index.js';
 const SALT_ROUNDS = 10;
 
 /**
- * 사용자 생성 (회원가입)
+ * Create user (register)
  */
 export async function createUser(userData: {
   username: string;
@@ -20,10 +20,10 @@ export async function createUser(userData: {
     details?: any;
   }>;
 }): Promise<User> {
-  // 비밀번호 해시
+  // Hash password
   const passwordHash = await bcrypt.hash(userData.password, SALT_ROUNDS);
 
-  // 사용자 데이터 준비
+  // Prepare user data
   const userDoc = {
     username: userData.username,
     password_hash: passwordHash,
@@ -36,11 +36,11 @@ export async function createUser(userData: {
     updated_at: new Date().toISOString()
   };
 
-  // Firestore에 저장
+  // Save to Firestore
   const userRef = await db.collection('users').add(userDoc);
   const userId = userRef.id;
 
-  // 건강 정보 저장 (서브컬렉션)
+  // Save health conditions (subcollection)
   if (userData.health_conditions && userData.health_conditions.length > 0) {
     const batch = db.batch();
     userData.health_conditions.forEach(condition => {
@@ -58,7 +58,7 @@ export async function createUser(userData: {
     await batch.commit();
   }
 
-  // 반환할 사용자 객체
+  // Return user object
   return {
     id: userId,
     username: userDoc.username,
@@ -73,7 +73,7 @@ export async function createUser(userData: {
 }
 
 /**
- * 사용자명으로 사용자 찾기
+ * Find user by username
  */
 export async function findUserByUsername(username: string): Promise<User | null> {
   const snapshot = await db
@@ -103,7 +103,7 @@ export async function findUserByUsername(username: string): Promise<User | null>
 }
 
 /**
- * 사용자명과 비밀번호로 인증
+ * Authenticate with username and password
  */
 export async function authenticateUser(
   username: string,
@@ -141,7 +141,7 @@ export async function authenticateUser(
 }
 
 /**
- * ID로 사용자 찾기
+ * Find user by ID
  */
 export async function findUserById(userId: string): Promise<User | null> {
   const doc = await db.collection('users').doc(userId).get();
@@ -165,7 +165,7 @@ export async function findUserById(userId: string): Promise<User | null> {
 }
 
 /**
- * 사용자 프로필 조회 (건강 정보 포함)
+ * Get user profile (with health conditions)
  */
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
   const user = await findUserById(userId);
@@ -173,7 +173,7 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
     return null;
   }
 
-  // 건강 정보 조회
+  // Fetch health conditions
   const conditionsSnapshot = await db
     .collection('users')
     .doc(userId)
@@ -195,7 +195,7 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
 }
 
 /**
- * 사용자 프로필 업데이트
+ * Update user profile
  */
 export async function updateUserProfile(
   userId: string,
@@ -219,7 +219,7 @@ export async function updateUserProfile(
 }
 
 /**
- * 건강 상태 업데이트
+ * Update health conditions
  */
 export async function updateHealthConditions(
   userId: string,
@@ -228,7 +228,7 @@ export async function updateHealthConditions(
     details?: any;
   }>
 ): Promise<void> {
-  // 기존 건강 정보 삭제
+  // Delete existing health conditions
   const existingConditions = await db
     .collection('users')
     .doc(userId)
@@ -240,7 +240,7 @@ export async function updateHealthConditions(
     batch.delete(doc.ref);
   });
 
-  // 새로운 건강 정보 추가
+  // Add new health conditions
   conditions.forEach(condition => {
     const conditionRef = db
       .collection('users')

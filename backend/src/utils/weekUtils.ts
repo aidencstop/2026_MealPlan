@@ -5,12 +5,12 @@ import { WeekBounds } from '../types/index.js';
 const TIMEZONE = 'Asia/Seoul';
 
 /**
- * 현재 주의 경계(일요일~토요일)를 반환
+ * Get current week bounds (Sun–Sat)
  */
 export function getCurrentWeekBounds(date: Date = new Date()): WeekBounds {
   const zonedDate = utcToZonedTime(date, TIMEZONE);
-  const weekStart = startOfWeek(zonedDate, { weekStartsOn: 0 }); // 0 = 일요일
-  const weekEnd = endOfWeek(zonedDate, { weekStartsOn: 0 }); // 6 = 토요일
+  const weekStart = startOfWeek(zonedDate, { weekStartsOn: 0 }); // 0 = Sunday
+  const weekEnd = endOfWeek(zonedDate, { weekStartsOn: 0 }); // 6 = Saturday
   
   return {
     year: weekStart.getFullYear(),
@@ -20,7 +20,7 @@ export function getCurrentWeekBounds(date: Date = new Date()): WeekBounds {
 }
 
 /**
- * 지난 주의 경계(일요일~토요일)를 반환
+ * Get last week bounds (Sun–Sat)
  */
 export function getLastWeekBounds(date: Date = new Date()): WeekBounds {
   const lastWeekDate = new Date(date);
@@ -29,14 +29,14 @@ export function getLastWeekBounds(date: Date = new Date()): WeekBounds {
 }
 
 /**
- * 특정 날짜가 속한 주의 경계를 반환
+ * Get week bounds for a given date
  */
 export function getWeekBoundsForDate(date: Date): WeekBounds {
   return getCurrentWeekBounds(date);
 }
 
 /**
- * 두 주가 같은지 비교
+ * Compare if two weeks are the same
  */
 export function isSameWeek(week1: WeekBounds, week2: WeekBounds): boolean {
   return week1.year === week2.year && 

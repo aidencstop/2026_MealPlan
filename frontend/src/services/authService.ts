@@ -2,12 +2,12 @@ import api from './api';
 import { AuthResponse, LoginRequest, RegisterRequest, User } from '../types';
 
 /**
- * 로그인
+ * Login
  */
 export async function login(credentials: LoginRequest): Promise<AuthResponse> {
   const response = await api.post<AuthResponse>('/auth/login', credentials);
   
-  // 토큰 저장
+  // Store token
   if (response.data.token) {
     localStorage.setItem('token', response.data.token);
   }
@@ -16,12 +16,12 @@ export async function login(credentials: LoginRequest): Promise<AuthResponse> {
 }
 
 /**
- * 회원가입
+ * Register
  */
 export async function register(userData: RegisterRequest): Promise<AuthResponse> {
   const response = await api.post<AuthResponse>('/auth/register', userData);
   
-  // 토큰 저장
+  // Store token
   if (response.data.token) {
     localStorage.setItem('token', response.data.token);
   }
@@ -30,14 +30,14 @@ export async function register(userData: RegisterRequest): Promise<AuthResponse>
 }
 
 /**
- * 로그아웃
+ * Logout
  */
 export function logout(): void {
   localStorage.removeItem('token');
 }
 
 /**
- * 현재 사용자 정보 조회
+ * Get current user
  */
 export async function getCurrentUser(): Promise<User> {
   const response = await api.get<{ user: User }>('/auth/me');
@@ -45,7 +45,7 @@ export async function getCurrentUser(): Promise<User> {
 }
 
 /**
- * 토큰 확인
+ * Check if token exists
  */
 export function hasToken(): boolean {
   return !!localStorage.getItem('token');

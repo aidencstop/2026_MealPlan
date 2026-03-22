@@ -3,7 +3,7 @@
   margin-bottom: 15px;
 }
 
-/* 요일 탭 */
+/* Day tabs */
 .day-tabs {
   display: flex;
   gap: 4px;
@@ -49,7 +49,7 @@
   opacity: 0.9;
 }
 
-/* 단일 요일 카드 */
+/* Single day card */
 .day-card {
   background-color: var(--white);
   border: 1px solid var(--border-color);
@@ -135,7 +135,7 @@
   font-size: 14px;
 }
 
-/* 영양소 정보 */
+/* Macro info */
 .macro-info {
   display: flex;
   justify-content: space-around;
@@ -170,7 +170,7 @@
   color: var(--text-color);
 }
 
-/* 근거 섹션 */
+/* Rationale section */
 .rationale-section h3 {
   font-size: 16px;
   font-weight: 600;
@@ -190,7 +190,13 @@
   color: var(--text-light);
 }
 
-/* 장보기 리스트 */
+.rationale-notes-paragraph {
+  margin: 0 0 15px;
+  line-height: 1.65;
+  color: var(--text-light);
+}
+
+/* Shopping list */
 .shopping-list-by-category {
   display: flex;
   flex-direction: column;
@@ -227,7 +233,7 @@
   border-left: 3px solid var(--primary-color);
 }
 
-/* 평가 섹션 */
+/* Evaluation section */
 .evaluation-section h3 {
   font-size: 16px;
   font-weight: 600;
@@ -263,7 +269,7 @@
   border-left-color: var(--warning-color);
 }
 
-/* 모달 */
+/* Modal */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -311,7 +317,7 @@
   border-top: 1px solid var(--border-color);
 }
 
-/* 주간 편집기 */
+/* Weekly editor */
 .week-editor {
   display: flex;
   flex-direction: column;

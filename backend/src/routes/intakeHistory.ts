@@ -4,13 +4,13 @@ import { authenticateToken } from '../middlewares/auth.js';
 
 const router = express.Router();
 
-// 모든 라우트는 인증 필요
+// All routes require auth
 router.use(authenticateToken);
 
-// 섭취 기록 목록 조회 (페이지네이션)
+// Get intake history (paginated)
 router.get('/', getHistory);
 
-// 특정 기록 상세 조회
+// Get record detail
 router.get('/:id', getRecordDetail);
 
 export default router;

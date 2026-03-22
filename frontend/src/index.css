@@ -1,4 +1,4 @@
-/* 전역 스타일 */
+/* Global styles */
 * {
   margin: 0;
   padding: 0;
@@ -6,7 +6,7 @@
 }
 
 :root {
-  /* 베이지/아이보리/주황색 팔레트 */
+  /* Beige/ivory/orange palette */
   --primary-color: #FFB380;
   --primary-light: #FFE8D9;
   --primary-hover: #FF9A5C;
@@ -45,14 +45,14 @@ code {
     monospace;
 }
 
-/* 컨테이너 */
+/* Container */
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
 }
 
-/* 버튼 공통 스타일 */
+/* Button styles */
 .btn {
   padding: 10px 20px;
   border: none;
@@ -93,7 +93,7 @@ code {
   opacity: 0.9;
 }
 
-/* 카드 */
+/* Card */
 .card {
   background-color: var(--white);
   border-radius: 12px;
@@ -110,7 +110,7 @@ code {
   color: var(--text-color);
 }
 
-/* 폼 */
+/* Form */
 .form-group {
   margin-bottom: 16px;
 }
@@ -148,7 +148,7 @@ code {
   min-height: 100px;
 }
 
-/* 체크박스 */
+/* Checkbox */
 .checkbox-group {
   display: flex;
   flex-wrap: wrap;
@@ -165,7 +165,7 @@ code {
   cursor: pointer;
 }
 
-/* 로딩 */
+/* Loading */
 .loading {
   display: flex;
   justify-content: center;
@@ -175,7 +175,7 @@ code {
   color: var(--text-light);
 }
 
-/* 에러 메시지 */
+/* Error message */
 .error-message {
   background-color: #FEF2F2;
   color: #991B1B;
@@ -186,7 +186,7 @@ code {
   font-size: 14px;
 }
 
-/* 성공 메시지 */
+/* Success message */
 .success-message {
   background-color: var(--primary-light);
   color: #C25100;
