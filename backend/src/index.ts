@@ -47,12 +47,12 @@ app.use((req, res) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚀 서버가 포트 ${PORT}에서 실행 중입니다.`);
+  console.log(`🚀 Server running on port ${PORT}.`);
   console.log(`http://localhost:${PORT}`);
 });
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
-  console.log('SIGTERM 신호를 받았습니다. 서버를 종료합니다.');
+  console.log('SIGTERM received. Shutting down server.');
   process.exit(0);
 });

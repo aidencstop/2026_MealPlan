@@ -18,7 +18,7 @@ export async function getHistory(req: Request, res: Response): Promise<void> {
     
     res.json(result);
   } catch (error: any) {
-    console.error('히스토리 조회 에러:', error);
+    console.error('History query error:', error);
     res.status(500).json({ error: 'An error occurred while fetching history.' });
   }
 }
@@ -47,7 +47,7 @@ export async function getRecordDetail(req: Request, res: Response): Promise<void
 
     res.json({ record });
   } catch (error: any) {
-    console.error('기록 상세 조회 에러:', error);
+    console.error('Record detail query error:', error);
     res.status(500).json({ error: 'An error occurred while fetching record details.' });
   }
 }

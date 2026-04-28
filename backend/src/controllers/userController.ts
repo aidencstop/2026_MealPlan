@@ -23,7 +23,7 @@ export async function getProfile(req: Request, res: Response): Promise<void> {
 
     res.json(profile);
   } catch (error: any) {
-    console.error('프로필 조회 에러:', error);
+    console.error('Profile query error:', error);
     res.status(500).json({ error: 'An error occurred while fetching profile.' });
   }
 }
@@ -53,7 +53,7 @@ export async function updateProfile(req: Request, res: Response): Promise<void> 
       user: updatedUser
     });
   } catch (error: any) {
-    console.error('프로필 수정 에러:', error);
+    console.error('Profile update error:', error);
     res.status(500).json({ error: 'An error occurred while updating profile.' });
   }
 }
@@ -76,8 +76,8 @@ export async function getHealthConditions(req: Request, res: Response): Promise<
 
     res.json({ health_conditions: profile.health_conditions });
   } catch (error: any) {
-    console.error('건강 정보 조회 에러:', error);
-    res.status(500).json({ error: '건강 정보 조회 중 오류가 발생했습니다.' });
+    console.error('Health conditions query error:', error);
+    res.status(500).json({ error: 'An error occurred while fetching health conditions.' });
   }
 }
 
@@ -105,7 +105,7 @@ export async function updateHealthConditionsHandler(
 
     res.json({ message: 'Health conditions updated.' });
   } catch (error: any) {
-    console.error('건강 정보 수정 에러:', error);
+    console.error('Health conditions update error:', error);
     res.status(500).json({ error: 'An error occurred while updating health conditions.' });
   }
 }

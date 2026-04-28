@@ -141,14 +141,8 @@ function MealPlan() {
     const raw = mealPlan.shopping_list;
     if (Array.isArray(raw)) return { 'Other': raw };
     const mapped: Record<string, string[]> = {};
-    const keyMap: Record<string, string> = {
-      '채소': 'Vegetables', '과일': 'Fruits', '육류·해산물': 'Meat & Seafood',
-      '유제품·계란': 'Dairy & Eggs', '곡물·가공식품': 'Grains & Processed',
-      '양념·기타': 'Seasonings & Other', '기타': 'Other'
-    };
     for (const [k, v] of Object.entries(raw)) {
-      const key = keyMap[k] || k;
-      mapped[key] = (mapped[key] || []).concat(v);
+      mapped[k] = (mapped[k] || []).concat(v);
     }
     return mapped;
   };

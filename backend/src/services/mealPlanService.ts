@@ -60,7 +60,7 @@ export async function getCurrentWeekMealPlan(userId: string): Promise<WeeklyMeal
   // Fetch user profile
   const userProfile = await getUserProfile(userId);
   if (!userProfile) {
-    throw new Error('사용자를 찾을 수 없습니다.');
+    throw new Error('User not found.');
   }
 
   // Fetch last week intake

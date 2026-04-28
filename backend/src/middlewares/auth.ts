@@ -26,14 +26,14 @@ export function authenticateToken(
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
-  console.log('🔐 인증 체크:', {
+  console.log('🔐 Auth check:', {
     hasAuthHeader: !!authHeader,
     hasToken: !!token,
-    jwtSecret: process.env.JWT_SECRET ? '설정됨' : '미설정'
+    jwtSecret: process.env.JWT_SECRET ? 'set' : 'not set'
   });
 
   if (!token) {
-    console.log('❌ 토큰 없음');
+    console.log('❌ No token.');
     res.status(401).json({ error: 'Authentication token is required.' });
     return;
   }
@@ -44,11 +44,11 @@ export function authenticateToken(
       process.env.JWT_SECRET || 'secret'
     ) as JwtPayload;
     
-    console.log('✅ 토큰 검증 성공:', { userId: payload.userId });
+    console.log('✅ Token verified:', { userId: payload.userId });
     req.userId = payload.userId;
     next();
   } catch (error: any) {
-    console.log('❌ 토큰 검증 실패:', error.message);
+    console.log('❌ Token verification failed:', error.message);
     res.status(403).json({ error: 'Invalid token.' });
     return;
   }

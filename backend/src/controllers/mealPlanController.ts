@@ -32,7 +32,7 @@ export async function getCurrentMealPlan(req: Request, res: Response): Promise<v
       lastWeekRecord: lastWeekRecord || null
     });
   } catch (error: any) {
-    console.error('식단 조회 에러:', error);
+    console.error('Meal plan query error:', error);
     res.status(500).json({ error: error.message || 'An error occurred while fetching meal plan.' });
   }
 }
@@ -50,7 +50,7 @@ export async function getLastWeekIntake(req: Request, res: Response): Promise<vo
     const intakeData = await getLastWeekIntakeForEdit(req.userId);
     res.json(intakeData);
   } catch (error: any) {
-    console.error('지난주 기록 조회 에러:', error);
+    console.error('Last week intake query error:', error);
     res.status(500).json({ error: 'An error occurred while fetching last week record.' });
   }
 }
@@ -85,7 +85,7 @@ export async function saveLastWeekIntake(req: Request, res: Response): Promise<v
       record
     });
   } catch (error: any) {
-    console.error('섭취 기록 저장 에러:', error);
+    console.error('Intake record save error:', error);
     res.status(500).json({ error: error.message || 'An error occurred while saving intake record.' });
   }
 }
@@ -122,7 +122,7 @@ export async function regenerateMealPlan(req: Request, res: Response): Promise<v
       lastWeekRecord: lastWeekRecord || null
     });
   } catch (error: any) {
-    console.error('식단 재생성 에러:', error);
+    console.error('Meal plan regeneration error:', error);
     res.status(500).json({ error: error.message || 'An error occurred while regenerating meal plan.' });
   }
 }

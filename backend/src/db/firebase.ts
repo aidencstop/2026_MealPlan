@@ -21,6 +21,6 @@ export const db = admin.firestore();
 // Auth instance
 export const auth = admin.auth();
 
-console.log('✅ Firebase Admin 초기화 완료');
+console.log('✅ Firebase Admin initialized.');
 
 export default admin;

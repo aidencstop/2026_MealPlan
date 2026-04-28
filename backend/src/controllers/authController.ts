@@ -68,7 +68,7 @@ export async function register(req: Request, res: Response): Promise<void> {
       user
     });
   } catch (error: any) {
-    console.error('회원가입 에러:', error);
+    console.error('Registration error:', error);
       res.status(500).json({ error: 'An error occurred during registration.' });
   }
 }
@@ -94,7 +94,7 @@ export async function login(req: Request, res: Response): Promise<void> {
     }
 
     // Create JWT token
-    console.log('🔑 JWT 토큰 생성:', { 
+    console.log('🔑 JWT token created:', { 
       userId: user.id, 
       username: user.username,
       jwtSecret: JWT_SECRET 
@@ -112,7 +112,7 @@ export async function login(req: Request, res: Response): Promise<void> {
       user
     });
   } catch (error: any) {
-    console.error('로그인 에러:', error);
+    console.error('Login error:', error);
       res.status(500).json({ error: 'An error occurred during login.' });
   }
 }
@@ -135,7 +135,7 @@ export async function me(req: Request, res: Response): Promise<void> {
 
     res.json({ user });
   } catch (error: any) {
-    console.error('사용자 조회 에러:', error);
+    console.error('User query error:', error);
     res.status(500).json({ error: 'An error occurred while fetching user information.' });
   }
 }

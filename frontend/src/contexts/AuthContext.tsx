@@ -28,7 +28,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           const userData = await getCurrentUser();
           setUser(userData);
         } catch (error) {
-          console.error('사용자 정보 로드 실패:', error);
+          console.error('Failed to load user:', error);
           logoutService();
         }
       }
@@ -52,7 +52,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const userData = await getCurrentUser();
       setUser(userData);
     } catch (error) {
-      console.error('사용자 정보 갱신 실패:', error);
+      console.error('Failed to refresh user:', error);
       logout();
     }
   };
