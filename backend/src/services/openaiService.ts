@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
 import dotenv from 'dotenv';
-import { UserProfile, IntakeEvaluation, WeeklyIntake, Macro } from '../types/index.js';
+import { UserProfile, IntakeEvaluation, WeeklyIntake, Macro, DailyMeal } from '../types/index.js';
 import { normalizeMealPlanRationale } from '../utils/rationaleUtils.js';
 
 dotenv.config();
@@ -25,7 +25,7 @@ function buildEvaluateIntakePrompt(
     sun: 'Sunday', mon: 'Monday', tue: 'Tuesday', wed: 'Wednesday',
     thu: 'Thursday', fri: 'Friday', sat: 'Saturday'
   };
-  const intakeText = Object.entries(lastWeekIntake)
+  const intakeText = (Object.entries(lastWeekIntake) as [string, DailyMeal][])
     .map(([day, meals]) => {
       return `${dayNames[day]}:
   Breakfast: ${meals.breakfast.map(m => m.name).join(', ') || 'none'}
@@ -119,7 +119,7 @@ function buildGenerateMealPlanPrompt(
       sun: 'Sunday', mon: 'Monday', tue: 'Tuesday', wed: 'Wednesday',
       thu: 'Thursday', fri: 'Friday', sat: 'Saturday'
     };
-    const intakeText = Object.entries(lastWeekIntake)
+    const intakeText = (Object.entries(lastWeekIntake) as [string, DailyMeal][])
       .map(([day, meals]) => {
         return `${dayNames[day]}: Breakfast(${meals.breakfast.map(m => m.name).join(', ')}), Lunch(${meals.lunch.map(m => m.name).join(', ')}), Dinner(${meals.dinner.map(m => m.name).join(', ')})`;
       })
