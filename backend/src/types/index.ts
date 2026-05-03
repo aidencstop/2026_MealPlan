@@ -36,6 +36,7 @@ export interface MealItem {
   name: string;
   portion?: string;
   note?: string;
+  calories_kcal?: number;
 }
 
 export interface DailyMeal {

@@ -30,6 +30,7 @@ function MealPlan() {
   const [selectedDay, setSelectedDay] = useState<keyof WeeklyIntake>('sun');
   const [selectedLastWeekDay, setSelectedLastWeekDay] = useState<keyof WeeklyIntake>('sun');
   const [selectedModalDay, setSelectedModalDay] = useState<keyof WeeklyIntake>('sun');
+  const [purchasedItems, setPurchasedItems] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadData();
@@ -96,6 +97,7 @@ function MealPlan() {
       const data = await regenerateMealPlan();
       setMealPlan(data.mealPlan);
       setLastWeekRecord(data.lastWeekRecord);
+      setPurchasedItems(new Set());
       setSuccess('New meal plan generated!');
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
@@ -103,6 +105,18 @@ function MealPlan() {
     } finally {
       setRegenerating(false);
     }
+  };
+
+  const togglePurchased = (key: string) => {
+    setPurchasedItems(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
   };
 
   const updateDayMeal = (day: keyof WeeklyIntake, mealType: keyof DailyMeal, meals: any[]) => {
@@ -402,25 +416,46 @@ function MealPlan() {
                 <div className="meal-column">
                   <strong className="meal-column-title">Breakfast</strong>
                   <ul>
-                    {mealPlan.plan_data[selectedDay].breakfast.map((item, i) => (
-                      <li key={i}>{typeof item === 'string' ? item : item.name}</li>
-                    ))}
+                    {mealPlan.plan_data[selectedDay].breakfast.map((item, i) => {
+                      const name = typeof item === 'string' ? item : item.name;
+                      const kcal = typeof item === 'object' ? item.calories_kcal : undefined;
+                      return (
+                        <li key={i}>
+                          {name}
+                          {kcal != null && <span className="meal-item-calories">({kcal.toLocaleString()} kcal)</span>}
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
                 <div className="meal-column">
                   <strong className="meal-column-title">Lunch</strong>
                   <ul>
-                    {mealPlan.plan_data[selectedDay].lunch.map((item, i) => (
-                      <li key={i}>{typeof item === 'string' ? item : item.name}</li>
-                    ))}
+                    {mealPlan.plan_data[selectedDay].lunch.map((item, i) => {
+                      const name = typeof item === 'string' ? item : item.name;
+                      const kcal = typeof item === 'object' ? item.calories_kcal : undefined;
+                      return (
+                        <li key={i}>
+                          {name}
+                          {kcal != null && <span className="meal-item-calories">({kcal.toLocaleString()} kcal)</span>}
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
                 <div className="meal-column">
                   <strong className="meal-column-title">Dinner</strong>
                   <ul>
-                    {mealPlan.plan_data[selectedDay].dinner.map((item, i) => (
-                      <li key={i}>{typeof item === 'string' ? item : item.name}</li>
-                    ))}
+                    {mealPlan.plan_data[selectedDay].dinner.map((item, i) => {
+                      const name = typeof item === 'string' ? item : item.name;
+                      const kcal = typeof item === 'object' ? item.calories_kcal : undefined;
+                      return (
+                        <li key={i}>
+                          {name}
+                          {kcal != null && <span className="meal-item-calories">({kcal.toLocaleString()} kcal)</span>}
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               </div>
@@ -470,26 +505,28 @@ function MealPlan() {
             <div className="card">
               <h2 className="card-title">Shopping List</h2>
               <div className="shopping-list-by-category">
-                {SHOPPING_CATEGORY_ORDER.filter(cat => (shoppingListByCategory[cat]?.length ?? 0) > 0).map(category => (
-                  <div key={category} className="shopping-category">
-                    <h3 className="shopping-category-title">{category}</h3>
-                    <ul className="shopping-list">
-                      {shoppingListByCategory[category].map((item, i) => (
-                        <li key={i}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-                {Object.keys(shoppingListByCategory).filter(cat => !SHOPPING_CATEGORY_ORDER.includes(cat)).map(category => (
-                  <div key={category} className="shopping-category">
-                    <h3 className="shopping-category-title">{category}</h3>
-                    <ul className="shopping-list">
-                      {shoppingListByCategory[category].map((item, i) => (
-                        <li key={i}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
+                {[...SHOPPING_CATEGORY_ORDER, ...Object.keys(shoppingListByCategory).filter(cat => !SHOPPING_CATEGORY_ORDER.includes(cat))]
+                  .filter(cat => (shoppingListByCategory[cat]?.length ?? 0) > 0)
+                  .map(category => (
+                    <div key={category} className="shopping-category">
+                      <h3 className="shopping-category-title">{category}</h3>
+                      <ul className="shopping-list">
+                        {shoppingListByCategory[category].map((item, i) => {
+                          const key = `${category}:${item}:${i}`;
+                          const purchased = purchasedItems.has(key);
+                          return (
+                            <li
+                              key={i}
+                              className={`shopping-list-item${purchased ? ' purchased' : ''}`}
+                              onClick={() => togglePurchased(key)}
+                            >
+                              {item}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  ))}
               </div>
             </div>
           )}

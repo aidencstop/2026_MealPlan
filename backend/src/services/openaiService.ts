@@ -163,39 +163,39 @@ Respond ONLY in the following JSON format. Output pure JSON with no markdown or 
   },
   "plan": {
     "sun": {
-      "breakfast": ["<food1>", "<food2>", "<food3>"],
-      "lunch": ["<food1>", "<food2>", "<food3>"],
-      "dinner": ["<food1>", "<food2>", "<food3>"]
+      "breakfast": [{"name": "<food1>", "calories_kcal": <number>}, {"name": "<food2>", "calories_kcal": <number>}],
+      "lunch": [{"name": "<food1>", "calories_kcal": <number>}, {"name": "<food2>", "calories_kcal": <number>}],
+      "dinner": [{"name": "<food1>", "calories_kcal": <number>}, {"name": "<food2>", "calories_kcal": <number>}]
     },
     "mon": {
-      "breakfast": ["<food1>", "<food2>", "<food3>"],
-      "lunch": ["<food1>", "<food2>", "<food3>"],
-      "dinner": ["<food1>", "<food2>", "<food3>"]
+      "breakfast": [{"name": "<food1>", "calories_kcal": <number>}, {"name": "<food2>", "calories_kcal": <number>}],
+      "lunch": [{"name": "<food1>", "calories_kcal": <number>}, {"name": "<food2>", "calories_kcal": <number>}],
+      "dinner": [{"name": "<food1>", "calories_kcal": <number>}, {"name": "<food2>", "calories_kcal": <number>}]
     },
     "tue": {
-      "breakfast": ["<food1>", "<food2>", "<food3>"],
-      "lunch": ["<food1>", "<food2>", "<food3>"],
-      "dinner": ["<food1>", "<food2>", "<food3>"]
+      "breakfast": [{"name": "<food1>", "calories_kcal": <number>}, {"name": "<food2>", "calories_kcal": <number>}],
+      "lunch": [{"name": "<food1>", "calories_kcal": <number>}, {"name": "<food2>", "calories_kcal": <number>}],
+      "dinner": [{"name": "<food1>", "calories_kcal": <number>}, {"name": "<food2>", "calories_kcal": <number>}]
     },
     "wed": {
-      "breakfast": ["<food1>", "<food2>", "<food3>"],
-      "lunch": ["<food1>", "<food2>", "<food3>"],
-      "dinner": ["<food1>", "<food2>", "<food3>"]
+      "breakfast": [{"name": "<food1>", "calories_kcal": <number>}, {"name": "<food2>", "calories_kcal": <number>}],
+      "lunch": [{"name": "<food1>", "calories_kcal": <number>}, {"name": "<food2>", "calories_kcal": <number>}],
+      "dinner": [{"name": "<food1>", "calories_kcal": <number>}, {"name": "<food2>", "calories_kcal": <number>}]
     },
     "thu": {
-      "breakfast": ["<food1>", "<food2>", "<food3>"],
-      "lunch": ["<food1>", "<food2>", "<food3>"],
-      "dinner": ["<food1>", "<food2>", "<food3>"]
+      "breakfast": [{"name": "<food1>", "calories_kcal": <number>}, {"name": "<food2>", "calories_kcal": <number>}],
+      "lunch": [{"name": "<food1>", "calories_kcal": <number>}, {"name": "<food2>", "calories_kcal": <number>}],
+      "dinner": [{"name": "<food1>", "calories_kcal": <number>}, {"name": "<food2>", "calories_kcal": <number>}]
     },
     "fri": {
-      "breakfast": ["<food1>", "<food2>", "<food3>"],
-      "lunch": ["<food1>", "<food2>", "<food3>"],
-      "dinner": ["<food1>", "<food2>", "<food3>"]
+      "breakfast": [{"name": "<food1>", "calories_kcal": <number>}, {"name": "<food2>", "calories_kcal": <number>}],
+      "lunch": [{"name": "<food1>", "calories_kcal": <number>}, {"name": "<food2>", "calories_kcal": <number>}],
+      "dinner": [{"name": "<food1>", "calories_kcal": <number>}, {"name": "<food2>", "calories_kcal": <number>}]
     },
     "sat": {
-      "breakfast": ["<food1>", "<food2>", "<food3>"],
-      "lunch": ["<food1>", "<food2>", "<food3>"],
-      "dinner": ["<food1>", "<food2>", "<food3>"]
+      "breakfast": [{"name": "<food1>", "calories_kcal": <number>}, {"name": "<food2>", "calories_kcal": <number>}],
+      "lunch": [{"name": "<food1>", "calories_kcal": <number>}, {"name": "<food2>", "calories_kcal": <number>}],
+      "dinner": [{"name": "<food1>", "calories_kcal": <number>}, {"name": "<food2>", "calories_kcal": <number>}]
     }
   },
   "plan_macro": {
@@ -237,6 +237,8 @@ Respond ONLY in the following JSON format. Output pure JSON with no markdown or 
 
 Requirements:
 - 2–4 items per meal
+- Each meal item must be an object: {"name": "<food name>", "calories_kcal": <integer>}
+- calories_kcal: estimated kcal for a typical single serving of that food item (integer, not per 100g)
 - Use commonly available foods
 - NEVER include allergenic foods
 - Respect diet characteristics (vegan, vegetarian, etc.)

@@ -102,6 +102,13 @@
   font-size: 14px;
 }
 
+.meal-item-calories {
+  display: block;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
 .day-title {
   font-size: 16px;
   font-weight: 700;
@@ -224,13 +231,28 @@
   padding: 0;
 }
 
-.shopping-list li {
+.shopping-list-item {
   padding: 10px 14px;
   background-color: var(--white);
   border-radius: 6px;
-  border-left: 3px solid var(--primary-color);
   border: 1px solid var(--border-color);
   border-left: 3px solid var(--primary-color);
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.15s ease, color 0.15s ease, border-left-color 0.15s ease;
+  font-size: 14px;
+  color: var(--text-color);
+}
+
+.shopping-list-item:hover {
+  background-color: var(--gray-50);
+}
+
+.shopping-list-item.purchased {
+  background-color: var(--gray-100);
+  border-left-color: var(--border-color);
+  color: var(--text-secondary);
+  text-decoration: line-through;
 }
 
 /* Evaluation section */
